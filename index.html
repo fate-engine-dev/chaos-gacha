@@ -10,7 +10,7 @@
 </head>
 <body>
 
-<div class="lflash" id="lflash"></div>
+<div class="rarity-flash" id="rarityFlash"></div>
 
 <!-- ══ MENU SCREEN ══ -->
 <div class="screen active" id="screen-menu">
@@ -18,18 +18,14 @@
     <div class="menu-eyebrow">Choose your path</div>
     <h1 class="menu-title">Fate Engine</h1>
     <p class="menu-tag">Roll the unknown. Shape what emerges.</p>
-
     <div class="mode-cards">
       <div class="mode-card char" onclick="enterMode('character')">
         <span class="mode-icon">⚔️</span>
         <div class="mode-name">Character</div>
         <div class="mode-desc">Forge yourself from the chaos. Roll abilities, traits, items, familiars and titles.</div>
         <div class="mode-tags">
-          <span class="mode-tag">Traits</span>
-          <span class="mode-tag">Powers</span>
-          <span class="mode-tag">Items</span>
-          <span class="mode-tag">Familiars</span>
-          <span class="mode-tag">Titles</span>
+          <span class="mode-tag">Traits</span><span class="mode-tag">Powers</span>
+          <span class="mode-tag">Items</span><span class="mode-tag">Familiars</span><span class="mode-tag">Titles</span>
         </div>
       </div>
       <div class="mode-card world" onclick="enterMode('world')">
@@ -37,24 +33,18 @@
         <div class="mode-name">World</div>
         <div class="mode-desc">Reshape reality itself. Roll biomes, factions, materials and species into existence.</div>
         <div class="mode-tags">
-          <span class="mode-tag">Biomes</span>
-          <span class="mode-tag">Factions</span>
-          <span class="mode-tag">Materials</span>
-          <span class="mode-tag">Species</span>
+          <span class="mode-tag">Biomes</span><span class="mode-tag">Factions</span>
+          <span class="mode-tag">Materials</span><span class="mode-tag">Species</span>
         </div>
       </div>
       <div class="mode-card total" onclick="enterMode('total')">
         <span class="mode-icon">✦</span>
         <div class="mode-name">Total</div>
         <div class="mode-desc">Character and world intertwined. Every roll could be anything. Pure chaos.</div>
-        <div class="mode-tags">
-          <span class="mode-tag">All pools</span>
-          <span class="mode-tag">Combined</span>
-        </div>
+        <div class="mode-tags"><span class="mode-tag">All pools</span><span class="mode-tag">Combined</span></div>
       </div>
     </div>
-
-    <div class="menu-footer">v0.3 · fate-engine</div>
+    <div class="menu-footer">v0.4 · fate-engine</div>
   </div>
 </div>
 
@@ -67,10 +57,21 @@
     </div>
 
     <div class="stage" id="stage">
+      <!-- Empty state -->
       <div class="empty-state" id="emptyState">
         <div class="empty-orb">✦</div>
         <span class="empty-text">awaiting your roll</span>
       </div>
+
+      <!-- Spin reel -->
+      <div class="spin-overlay" id="spinOverlay">
+        <div class="spin-window">
+          <div class="spin-indicator"></div>
+          <div class="spin-track" id="spinTrack"></div>
+        </div>
+      </div>
+
+      <!-- Result card -->
       <div class="card" id="card">
         <div class="card-top">
           <div class="card-icon-wrap" id="cIcon"></div>
@@ -98,105 +99,168 @@
   </div>
 </div>
 
-<!-- Load card data first, then game logic -->
 <script src="cards.js"></script>
 <script>
-/* ══════════════════════════════
-   GAME ENGINE  (index.html)
-   Do not edit unless you know what you're doing.
-   To add cards: edit cards.js instead.
-══════════════════════════════ */
-
 const WEIGHTS = { common:40, uncommon:30, rare:18, epic:9, legendary:3 };
+function mkPool(arr){const p=[];arr.forEach(c=>{for(let i=0;i<(WEIGHTS[c.rarity]||1);i++)p.push(c);});return p;}
+const CP=mkPool(CHARACTER_CARDS), WP=mkPool(WORLD_CARDS), TP=mkPool([...CHARACTER_CARDS,...WORLD_CARDS]);
+let mode=null,rc=0,rolling=false,hShown=false;
 
-function mkPool(arr) {
-  const p = [];
-  arr.forEach(c => { for (let i = 0; i < (WEIGHTS[c.rarity]||1); i++) p.push(c); });
-  return p;
-}
-
-const CP = mkPool(CHARACTER_CARDS);
-const WP = mkPool(WORLD_CARDS);
-const TP = mkPool([...CHARACTER_CARDS, ...WORLD_CARDS]);
-
-let mode = null, rc = 0, rolling = false, hShown = false;
-
-function enterMode(m) {
-  mode = m; rc = 0; rolling = false; hShown = false;
-  document.body.className = 'mode-' + m;
-  const labels = { character:'Character Mode', world:'World Mode', total:'Total Mode' };
-  document.getElementById('modeBadge').textContent = labels[m];
-  const card = document.getElementById('card');
-  card.classList.remove('reveal','exit'); card.style.opacity = '0';
-  document.getElementById('emptyState').classList.remove('hidden');
-  document.getElementById('rollCount').textContent = '0 rolls';
-  document.getElementById('btnLabel').textContent = 'Roll';
-  document.getElementById('rollBtn').disabled = false;
-  document.getElementById('historySection').classList.remove('visible');
-  document.getElementById('historyGrid').innerHTML = '';
+function enterMode(m){
+  mode=m;rc=0;rolling=false;hShown=false;
+  document.body.className='mode-'+m;
+  const labels={character:'Character Mode',world:'World Mode',total:'Total Mode'};
+  document.getElementById('modeBadge').textContent=labels[m];
+  resetGame();
   document.getElementById('screen-menu').classList.remove('active');
   document.getElementById('screen-game').classList.add('active');
-  window.scrollTo(0, 0);
+  window.scrollTo(0,0);
 }
 
-function goBack() {
+function goBack(){
   document.getElementById('screen-game').classList.remove('active');
   document.getElementById('screen-menu').classList.add('active');
-  document.body.className = '';
-  window.scrollTo(0, 0);
+  document.body.className='';
+  window.scrollTo(0,0);
 }
 
-function getPool() { return mode === 'character' ? CP : mode === 'world' ? WP : TP; }
-function pick() { const p = getPool(); return p[Math.floor(Math.random() * p.length)]; }
-function starsHTML(n) { let h=''; for (let i=1;i<=5;i++) h+=`<div class="star${i<=n?' lit':''}"></div>`; return h; }
+function resetGame(){
+  const card=document.getElementById('card');
+  card.classList.remove('reveal','exit');card.style.opacity='0';card.removeAttribute('data-rarity');
+  document.getElementById('emptyState').classList.remove('hidden');
+  document.getElementById('spinOverlay').classList.remove('active');
+  document.getElementById('rollCount').textContent='0 rolls';
+  document.getElementById('btnLabel').textContent='Roll';
+  document.getElementById('rollBtn').disabled=false;
+  document.getElementById('historySection').classList.remove('visible');
+  document.getElementById('historyGrid').innerHTML='';
+}
 
-function roll() {
-  if (rolling) return; rolling = true;
-  const btn = document.getElementById('rollBtn'), lbl = document.getElementById('btnLabel');
-  const card = document.getElementById('card'), empty = document.getElementById('emptyState');
-  btn.disabled = true; lbl.textContent = 'Rolling…';
-  if (card.classList.contains('reveal')) {
+function getPool(){return mode==='character'?CP:mode==='world'?WP:TP;}
+function pick(){const p=getPool();return p[Math.floor(Math.random()*p.length)];}
+function starsHTML(n){let h='';for(let i=1;i<=5;i++)h+=`<div class="star${i<=n?' lit':''}"></div>`;return h;}
+
+/* ── SPIN REEL ── */
+const REEL_SEQ=[
+  {rarity:'common',label:'Common'},
+  {rarity:'common',label:'Common'},
+  {rarity:'common',label:'Common'},
+  {rarity:'uncommon',label:'Uncommon'},
+  {rarity:'common',label:'Common'},
+  {rarity:'uncommon',label:'Uncommon'},
+  {rarity:'rare',label:'Rare'},
+  {rarity:'common',label:'Common'},
+  {rarity:'uncommon',label:'Uncommon'},
+  {rarity:'common',label:'Common'},
+  {rarity:'epic',label:'Epic'},
+  {rarity:'uncommon',label:'Uncommon'},
+  {rarity:'common',label:'Common'},
+  {rarity:'rare',label:'Rare'},
+  {rarity:'common',label:'Common'},
+  {rarity:'legendary',label:'Legendary'},
+  {rarity:'common',label:'Common'},
+  {rarity:'uncommon',label:'Uncommon'},
+];
+const ITEM_H=36;
+
+function buildReel(targetRarity){
+  const track=document.getElementById('spinTrack');
+  track.innerHTML='';track.style.transform='translateY(0)';
+  const items=[];
+  // 60 random items for fast phase
+  for(let i=0;i<60;i++) items.push(REEL_SEQ[Math.floor(Math.random()*REEL_SEQ.length)]);
+  // slow-down tail ending on target
+  const tailLabel=targetRarity.charAt(0).toUpperCase()+targetRarity.slice(1);
+  const tail=[
+    {rarity:'common',label:'Common'},
+    {rarity:'common',label:'Common'},
+    {rarity:'uncommon',label:'Uncommon'},
+    {rarity:'common',label:'Common'},
+    {rarity:targetRarity,label:tailLabel},
+  ];
+  const all=[...items,...tail];
+  all.forEach(item=>{
+    const d=document.createElement('div');
+    d.className=`spin-item ${item.rarity}`;
+    d.innerHTML=`<div class="si-dot"></div><span class="si-name">${item.label}</span>`;
+    track.appendChild(d);
+  });
+  return all.length;
+}
+
+function animateReel(totalItems,onDone){
+  const track=document.getElementById('spinTrack');
+  const duration=7000;
+  const start=performance.now();
+  // land last item centered: window=72px, item=36px → offset=18px
+  const finalY=-((totalItems-1)*ITEM_H)+18;
+  function ease(t){return 1-Math.pow(1-t,4);}
+  function frame(now){
+    const t=Math.min((now-start)/duration,1);
+    track.style.transform=`translateY(${ease(t)*finalY}px)`;
+    if(t<1) requestAnimationFrame(frame);
+    else{track.style.transform=`translateY(${finalY}px)`;onDone();}
+  }
+  requestAnimationFrame(frame);
+}
+
+/* ── ROLL FLOW ── */
+function roll(){
+  if(rolling)return; rolling=true;
+  const btn=document.getElementById('rollBtn'), lbl=document.getElementById('btnLabel');
+  const card=document.getElementById('card'), empty=document.getElementById('emptyState');
+  const spin=document.getElementById('spinOverlay');
+  btn.disabled=true; lbl.textContent='Rolling…';
+  const result=pick();
+  if(card.classList.contains('reveal')){
     card.classList.remove('reveal'); card.classList.add('exit');
-    setTimeout(showCard, 280);
+    setTimeout(()=>{card.classList.remove('exit');card.style.opacity='0';beginSpin(result,spin,empty,card,btn,lbl);},260);
   } else {
     empty.classList.add('hidden');
-    setTimeout(showCard, 120);
+    beginSpin(result,spin,empty,card,btn,lbl);
   }
 }
 
-function showCard() {
-  const r = pick(), card = document.getElementById('card');
-  card.classList.remove('exit');
-  document.getElementById('cIcon').textContent = r.icon;
-  document.getElementById('cType').textContent = r.type;
-  document.getElementById('cName').textContent = r.name;
-  document.getElementById('cDesc').textContent = r.desc;
-  document.getElementById('cStars').innerHTML = starsHTML(r.stars);
-  const b = document.getElementById('cRarity');
-  b.textContent = r.rarity.charAt(0).toUpperCase() + r.rarity.slice(1);
-  b.className = 'rbadge ' + r.rarity;
-  card.setAttribute('data-rarity', r.rarity);
-  if (r.rarity === 'legendary') {
-    const f = document.getElementById('lflash');
-    f.style.background = 'radial-gradient(ellipse 60% 60% at 50% 50%,rgba(184,112,32,.18) 0%,transparent 70%)';
-    f.classList.remove('fire'); void f.offsetWidth; f.classList.add('fire');
-  }
-  card.classList.add('reveal');
-  rc++; document.getElementById('rollCount').textContent = rc + (rc===1?' roll':' rolls');
-  addHistory(r);
-  document.getElementById('rollBtn').disabled = false;
-  document.getElementById('btnLabel').textContent = 'Roll Again';
-  rolling = false;
+function beginSpin(result,spin,empty,card,btn,lbl){
+  const totalItems=buildReel(result.rarity);
+  spin.classList.add('active');
+  animateReel(totalItems,()=>{
+    setTimeout(()=>{spin.classList.remove('active');showCard(result,card,btn,lbl);},350);
+  });
 }
 
-function addHistory(c) {
-  const sec = document.getElementById('historySection'), grid = document.getElementById('historyGrid');
-  if (!hShown) { sec.classList.add('visible'); hShown = true; }
-  const chip = document.createElement('div');
-  chip.className = `hchip ${c.rarity}`;
-  chip.innerHTML = `<span class="ci">${c.icon}</span><span>${c.name}</span>`;
+function showCard(result,card,btn,lbl){
+  document.getElementById('cIcon').textContent=result.icon;
+  document.getElementById('cType').textContent=result.type;
+  document.getElementById('cName').textContent=result.name;
+  document.getElementById('cDesc').textContent=result.desc;
+  document.getElementById('cStars').innerHTML=starsHTML(result.stars);
+  const b=document.getElementById('cRarity');
+  b.textContent=result.rarity.charAt(0).toUpperCase()+result.rarity.slice(1);
+  b.className='rbadge '+result.rarity;
+  card.setAttribute('data-rarity',result.rarity);
+  fireFlash(result.rarity);
+  card.classList.remove('exit'); card.classList.add('reveal');
+  rc++; document.getElementById('rollCount').textContent=rc+(rc===1?' roll':' rolls');
+  addHistory(result);
+  btn.disabled=false; lbl.textContent='Roll Again'; rolling=false;
+}
+
+function fireFlash(rarity){
+  if(rarity==='common')return;
+  const el=document.getElementById('rarityFlash');
+  el.className='rarity-flash'; void el.offsetWidth;
+  el.classList.add('flash-'+rarity);
+}
+
+function addHistory(c){
+  const sec=document.getElementById('historySection'),grid=document.getElementById('historyGrid');
+  if(!hShown){sec.classList.add('visible');hShown=true;}
+  const chip=document.createElement('div');
+  chip.className=`hchip ${c.rarity}`;
+  chip.innerHTML=`<span class="ci">${c.icon}</span><span>${c.name}</span>`;
   grid.prepend(chip);
-  while (grid.children.length > 24) grid.removeChild(grid.lastChild);
+  while(grid.children.length>24)grid.removeChild(grid.lastChild);
 }
 </script>
 </body>

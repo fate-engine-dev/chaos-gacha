@@ -1,6 +1,5 @@
 /* ═══════════════════════════════════════════════
-   FATE ENGINE — STYLES  (style.css)
-   Touch this file to change colors, fonts, layout.
+   FATE ENGINE — STYLES  (style.css)  v0.4
 ═══════════════════════════════════════════════ */
 
 :root {
@@ -26,7 +25,7 @@ html,body{width:100%;min-height:100vh;background:var(--bg);color:var(--text);fon
 .screen{display:none;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:2rem 1rem;}
 .screen.active{display:flex;}
 
-/* ── AMBIENT BACKGROUNDS ── */
+/* ── AMBIENT ── */
 #screen-menu{position:relative;}
 #screen-menu::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 70% 50% at 50% 0%,rgba(200,169,110,0.08) 0%,transparent 60%),radial-gradient(ellipse 50% 40% at 20% 100%,rgba(110,170,200,0.05) 0%,transparent 60%),radial-gradient(ellipse 50% 40% at 80% 100%,rgba(168,110,200,0.05) 0%,transparent 60%);pointer-events:none;z-index:0;}
 #screen-game{position:relative;justify-content:flex-start;padding-top:0;}
@@ -35,10 +34,116 @@ body.mode-character #screen-game::before{background:radial-gradient(ellipse 80% 
 body.mode-world     #screen-game::before{background:radial-gradient(ellipse 80% 50% at 50% -10%,rgba(110,170,200,.07) 0%,transparent 60%);}
 body.mode-total     #screen-game::before{background:radial-gradient(ellipse 80% 50% at 50% -10%,rgba(168,110,200,.07) 0%,transparent 60%);}
 
-/* ── LEGENDARY FLASH ── */
-.lflash{position:fixed;inset:0;opacity:0;pointer-events:none;z-index:99;}
-.lflash.fire{animation:lf 1.2s ease forwards;}
-@keyframes lf{0%{opacity:0;}20%{opacity:1;}100%{opacity:0;}}
+/* ══════════════════════════════
+   RARITY FLASH OVERLAY
+══════════════════════════════ */
+.rarity-flash{position:fixed;inset:0;opacity:0;pointer-events:none;z-index:98;transition:none;}
+
+/* common — no flash */
+.rarity-flash.flash-uncommon { animation: flash-uncommon 1.5s ease forwards; }
+.rarity-flash.flash-rare     { animation: flash-rare 2s ease forwards; }
+.rarity-flash.flash-epic     { animation: flash-epic 2.5s ease forwards; }
+.rarity-flash.flash-legendary{ animation: flash-legendary 3.5s ease forwards; }
+
+@keyframes flash-uncommon {
+  0%{opacity:0;} 15%{opacity:1;background:radial-gradient(ellipse 50% 50% at 50% 50%,rgba(74,138,90,.2) 0%,transparent 70%);} 100%{opacity:0;}
+}
+@keyframes flash-rare {
+  0%{opacity:0;} 10%{opacity:1;background:radial-gradient(ellipse 60% 60% at 50% 50%,rgba(58,110,168,.25) 0%,transparent 70%);} 100%{opacity:0;}
+}
+@keyframes flash-epic {
+  0%{opacity:0;} 8%{opacity:1;} 30%{opacity:.8;} 100%{opacity:0;}
+  8%{background:radial-gradient(ellipse 70% 70% at 50% 50%,rgba(122,74,184,.3) 0%,transparent 70%);}
+  30%{background:radial-gradient(ellipse 70% 70% at 50% 50%,rgba(122,74,184,.15) 0%,transparent 70%);}
+}
+@keyframes flash-legendary {
+  0%{opacity:0;}
+  5%{opacity:1;background:radial-gradient(ellipse 100% 100% at 50% 50%,rgba(184,112,32,.35) 0%,rgba(184,112,32,.1) 40%,transparent 70%);}
+  20%{opacity:1;background:radial-gradient(ellipse 100% 100% at 50% 50%,rgba(184,112,32,.25) 0%,rgba(184,112,32,.05) 40%,transparent 70%);}
+  100%{opacity:0;}
+}
+
+/* ══════════════════════════════
+   SPIN REEL
+══════════════════════════════ */
+.spin-overlay {
+  position:absolute; inset:0;
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  gap:0;
+  opacity:0; pointer-events:none;
+  transition:opacity .3s;
+  z-index:10;
+}
+.spin-overlay.active { opacity:1; pointer-events:auto; }
+
+.spin-window {
+  width:var(--card-w);
+  height:72px;
+  overflow:hidden;
+  position:relative;
+  border-radius:10px;
+  border:1px solid var(--border);
+  background:var(--bg2);
+}
+
+/* fade edges of window */
+.spin-window::before,
+.spin-window::after {
+  content:'';
+  position:absolute; left:0; right:0; height:28px; z-index:2; pointer-events:none;
+}
+.spin-window::before { top:0; background:linear-gradient(to bottom, var(--bg2), transparent); }
+.spin-window::after  { bottom:0; background:linear-gradient(to top, var(--bg2), transparent); }
+
+/* center indicator line */
+.spin-indicator {
+  position:absolute; left:0; right:0;
+  top:50%; transform:translateY(-50%);
+  height:36px;
+  border-top:1px solid var(--border);
+  border-bottom:1px solid var(--border);
+  background:rgba(255,255,255,0.02);
+  z-index:3; pointer-events:none;
+  border-radius:4px;
+  margin:0 12px;
+}
+
+.spin-track {
+  display:flex; flex-direction:column;
+  align-items:center;
+  will-change:transform;
+}
+
+.spin-item {
+  height:36px;
+  width:100%;
+  display:flex; align-items:center; justify-content:center;
+  gap:10px;
+  font-family:'DM Mono',monospace;
+  font-size:11px;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  flex-shrink:0;
+  padding:0 16px;
+}
+
+.spin-item .si-dot {
+  width:8px; height:8px; border-radius:50%; flex-shrink:0;
+}
+.spin-item .si-name { color:var(--text-dim); }
+
+.spin-item.common    .si-dot { background:var(--common-c); }
+.spin-item.uncommon  .si-dot { background:var(--uncommon-c); }
+.spin-item.rare      .si-dot { background:var(--rare-c); }
+.spin-item.epic      .si-dot { background:var(--epic-c); }
+.spin-item.legendary .si-dot { background:var(--legendary-c); box-shadow:0 0 6px rgba(184,112,32,.8); }
+
+.spin-item.common    .si-name { color:var(--common-c); }
+.spin-item.uncommon  .si-name { color:var(--uncommon-c); }
+.spin-item.rare      .si-name { color:var(--rare-c); }
+.spin-item.epic      .si-name { color:var(--epic-c); }
+.spin-item.legendary .si-name { color:var(--legendary-c); }
 
 /* ══════════════════════════════
    MENU
@@ -87,6 +192,7 @@ body.mode-total     .game-badge{color:var(--total);border-color:rgba(168,110,200
 
 /* ── STAGE ── */
 .stage{width:var(--card-w);height:420px;position:relative;display:flex;align-items:center;justify-content:center;margin-bottom:2.5rem;}
+
 .empty-state{display:flex;flex-direction:column;align-items:center;gap:16px;transition:opacity .3s;}
 .empty-state.hidden{opacity:0;pointer-events:none;}
 .empty-orb{width:80px;height:80px;border-radius:50%;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:32px;animation:op 3s ease-in-out infinite;}
@@ -95,14 +201,33 @@ body.mode-total     .game-badge{color:var(--total);border-color:rgba(168,110,200
 
 /* ── CARD ── */
 .card{position:absolute;width:var(--card-w);background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:1.75rem 1.5rem 1.5rem;opacity:0;transform:translateY(24px) scale(.95);transition:none;pointer-events:none;}
-.card.reveal{animation:cr .5s cubic-bezier(.22,1,.36,1) forwards;pointer-events:auto;}
+.card.reveal{animation:cr .6s cubic-bezier(.22,1,.36,1) forwards;pointer-events:auto;}
 .card.exit{animation:ce .25s ease forwards;}
+
 @keyframes cr{0%{opacity:0;transform:translateY(24px) scale(.95);}100%{opacity:1;transform:translateY(0) scale(1);}}
 @keyframes ce{0%{opacity:1;transform:translateY(0) scale(1);}100%{opacity:0;transform:translateY(-12px) scale(.97);}}
+
+/* rarity border glow */
 .card[data-rarity="uncommon"]{border-color:rgba(74,138,90,.35);}
 .card[data-rarity="rare"]{border-color:rgba(58,110,168,.45);}
-.card[data-rarity="epic"]{border-color:rgba(122,74,184,.5);box-shadow:0 0 30px rgba(122,74,184,.1);}
-.card[data-rarity="legendary"]{border-color:rgba(184,112,32,.6);box-shadow:0 0 50px rgba(184,112,32,.15),0 0 100px rgba(184,112,32,.06);}
+.card[data-rarity="epic"]{border-color:rgba(122,74,184,.5);box-shadow:0 0 30px rgba(122,74,184,.12);}
+.card[data-rarity="legendary"]{border-color:rgba(184,112,32,.6);box-shadow:0 0 50px rgba(184,112,32,.18),0 0 100px rgba(184,112,32,.07);}
+
+/* rarity shimmer on card reveal */
+.card[data-rarity="epic"].reveal::after {
+  content:''; position:absolute; inset:0; border-radius:12px;
+  background:linear-gradient(135deg,rgba(122,74,184,.15) 0%,transparent 50%,rgba(122,74,184,.1) 100%);
+  animation:shimmer-epic 2s ease forwards;
+  pointer-events:none;
+}
+.card[data-rarity="legendary"].reveal::after {
+  content:''; position:absolute; inset:0; border-radius:12px;
+  background:linear-gradient(135deg,rgba(184,112,32,.2) 0%,transparent 50%,rgba(184,112,32,.15) 100%);
+  animation:shimmer-legendary 3s ease forwards;
+  pointer-events:none;
+}
+@keyframes shimmer-epic{0%{opacity:1;}100%{opacity:0;}}
+@keyframes shimmer-legendary{0%{opacity:1;}60%{opacity:.6;}100%{opacity:0;}}
 
 .card-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:1.25rem;}
 .card-icon-wrap{width:52px;height:52px;border-radius:10px;border:1px solid var(--border);background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:26px;}
@@ -124,7 +249,13 @@ body.mode-total     .game-badge{color:var(--total);border-color:rgba(168,110,200
 .star{width:6px;height:6px;border-radius:50%;background:var(--text-muted);}
 .star.lit{background:var(--gold);box-shadow:0 0 6px rgba(200,169,110,.5);}
 .card[data-rarity="epic"]      .star.lit{background:#9a70e0;box-shadow:0 0 6px rgba(154,112,224,.5);}
-.card[data-rarity="legendary"] .star.lit{background:var(--legendary-c);box-shadow:0 0 8px rgba(184,112,32,.7);}
+.card[data-rarity="legendary"] .star.lit{background:var(--legendary-c);box-shadow:0 0 8px rgba(184,112,32,.8);}
+
+/* icon pulse on epic/legendary reveal */
+.card[data-rarity="epic"].reveal    .card-icon-wrap { animation: icon-pulse-epic 1s ease; }
+.card[data-rarity="legendary"].reveal .card-icon-wrap { animation: icon-pulse-legendary 1.5s ease; }
+@keyframes icon-pulse-epic      { 0%{box-shadow:none;} 40%{box-shadow:0 0 20px rgba(122,74,184,.5);} 100%{box-shadow:none;} }
+@keyframes icon-pulse-legendary { 0%{box-shadow:none;} 30%{box-shadow:0 0 30px rgba(184,112,32,.7);} 70%{box-shadow:0 0 20px rgba(184,112,32,.4);} 100%{box-shadow:none;} }
 
 /* ── ROLL BUTTON ── */
 .roll-area{display:flex;flex-direction:column;align-items:center;gap:12px;}
@@ -159,8 +290,7 @@ body.mode-total .roll-btn::before{background:radial-gradient(ellipse 80% 80% at 
 .hchip.epic{border-color:rgba(122,74,184,.4);color:#9a60e0;}
 .hchip.legendary{border-color:rgba(184,112,32,.5);color:var(--legendary-c);}
 
-/* ── ANIMATIONS ── */
+/* ── GLOBAL ANIMS ── */
 @keyframes fup{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
 
-/* ── RESPONSIVE ── */
 @media(max-width:380px){:root{--card-w:290px;}.stage{height:400px;}}
