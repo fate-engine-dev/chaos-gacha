@@ -1,604 +1,405 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
+<meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Chaos Gacha</title>
+<title>Fate Engine</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Pro:ital,wght@0,300;0,400;1,300;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #0a0905;
-    --bg2: #100f0a;
-    --bg3: #161410;
-    --border: rgba(180,160,100,0.12);
-    --border-hover: rgba(180,160,100,0.28);
-    --gold: #c8a96e;
-    --gold-dim: #7a6540;
-    --gold-bright: #e8c98a;
-    --text: #e8e0cc;
-    --text-dim: #8a8070;
-    --text-muted: #4a4438;
-    --common: #7a7870;
-    --common-bg: #1a1916;
-    --uncommon: #4a8a5a;
-    --uncommon-bg: #0f1f13;
-    --rare: #3a6ea8;
-    --rare-bg: #0c1826;
-    --epic: #7a4ab8;
-    --epic-bg: #180f2a;
-    --legendary: #b87020;
-    --legendary-bg: #241408;
-    --card-w: 320px;
+    --bg:#0a0905; --bg2:#100f0a; --bg3:#161410;
+    --border:rgba(180,160,100,0.12);
+    --gold:#c8a96e; --gold-dim:#7a6540; --gold-bright:#e8c98a;
+    --text:#e8e0cc; --text-dim:#8a8070; --text-muted:#4a4438;
+    --char:#c8a96e; --char-glow:rgba(200,169,110,0.15);
+    --world:#6eaac8; --world-glow:rgba(110,170,200,0.15);
+    --total:#a86ec8; --total-glow:rgba(168,110,200,0.15);
+    --common-c:#7a7870; --common-bg:#1a1916;
+    --uncommon-c:#4a8a5a; --uncommon-bg:#0f1f13;
+    --rare-c:#3a6ea8; --rare-bg:#0c1826;
+    --epic-c:#7a4ab8; --epic-bg:#180f2a;
+    --legendary-c:#b87020; --legendary-bg:#241408;
+    --card-w:320px;
   }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  html,body{width:100%;min-height:100vh;background:var(--bg);color:var(--text);font-family:'Crimson Pro',Georgia,serif;overflow-x:hidden;}
 
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  .screen{display:none;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:2rem 1rem;}
+  .screen.active{display:flex;}
 
-  html, body {
-    width: 100%; min-height: 100vh;
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'Crimson Pro', Georgia, serif;
-    overflow-x: hidden;
-  }
+  /* ambient */
+  #screen-menu{position:relative;}
+  #screen-menu::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 70% 50% at 50% 0%,rgba(200,169,110,0.08) 0%,transparent 60%),radial-gradient(ellipse 50% 40% at 20% 100%,rgba(110,170,200,0.05) 0%,transparent 60%),radial-gradient(ellipse 50% 40% at 80% 100%,rgba(168,110,200,0.05) 0%,transparent 60%);pointer-events:none;z-index:0;}
 
-  body::before {
-    content: '';
-    position: fixed; inset: 0;
-    background:
-      radial-gradient(ellipse 80% 50% at 50% -10%, rgba(200,169,110,0.07) 0%, transparent 60%),
-      radial-gradient(ellipse 60% 40% at 80% 110%, rgba(120,80,200,0.05) 0%, transparent 60%);
-    pointer-events: none; z-index: 0;
-  }
+  /* legendary flash */
+  .lflash{position:fixed;inset:0;opacity:0;pointer-events:none;z-index:99;}
+  .lflash.fire{animation:lf 1.2s ease forwards;}
+  @keyframes lf{0%{opacity:0;}20%{opacity:1;}100%{opacity:0;}}
 
-  .page {
-    position: relative; z-index: 1;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 3rem 1rem 4rem;
-  }
+  /* ── MENU ── */
+  .menu-inner{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;width:100%;max-width:620px;}
+  .menu-eyebrow{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.28em;text-transform:uppercase;color:var(--gold-dim);margin-bottom:1rem;opacity:0;animation:fup .7s ease .1s forwards;}
+  .menu-title{font-family:'Cinzel',serif;font-size:clamp(2.8rem,8vw,5rem);font-weight:700;letter-spacing:.08em;color:var(--gold);line-height:1;text-shadow:0 0 80px rgba(200,169,110,.3);margin-bottom:.5rem;opacity:0;animation:fup .7s ease .2s forwards;}
+  .menu-tag{font-size:1.05rem;color:var(--text-dim);font-style:italic;font-weight:300;margin-bottom:4rem;opacity:0;animation:fup .7s ease .3s forwards;}
 
-  .header {
-    text-align: center;
-    margin-bottom: 3.5rem;
-    opacity: 0;
-    animation: fadeUp 0.8s ease 0.1s forwards;
-  }
+  .mode-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;width:100%;opacity:0;animation:fup .7s ease .5s forwards;}
+  @media(max-width:560px){.mode-cards{grid-template-columns:1fr;max-width:300px;}}
 
-  .header-eyebrow {
-    font-family: 'DM Mono', monospace;
-    font-size: 10px;
-    letter-spacing: 0.25em;
-    text-transform: uppercase;
-    color: var(--gold-dim);
-    margin-bottom: 0.75rem;
-  }
+  .mode-card{position:relative;background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:1.75rem 1.25rem 1.5rem;cursor:pointer;transition:border-color .3s,box-shadow .3s,transform .2s;text-align:center;overflow:hidden;}
+  .mode-card::before{content:'';position:absolute;inset:0;border-radius:14px;opacity:0;transition:opacity .3s;}
+  .mode-card.char::before{background:radial-gradient(ellipse 80% 80% at 50% 100%,var(--char-glow) 0%,transparent 70%);}
+  .mode-card.world::before{background:radial-gradient(ellipse 80% 80% at 50% 100%,var(--world-glow) 0%,transparent 70%);}
+  .mode-card.total::before{background:radial-gradient(ellipse 80% 80% at 50% 100%,var(--total-glow) 0%,transparent 70%);}
+  .mode-card:hover{transform:translateY(-4px);}
+  .mode-card:hover::before{opacity:1;}
+  .mode-card.char:hover{border-color:rgba(200,169,110,.4);box-shadow:0 8px 40px rgba(200,169,110,.08);}
+  .mode-card.world:hover{border-color:rgba(110,170,200,.4);box-shadow:0 8px 40px rgba(110,170,200,.08);}
+  .mode-card.total:hover{border-color:rgba(168,110,200,.4);box-shadow:0 8px 40px rgba(168,110,200,.08);}
+  .mode-card:active{transform:translateY(-2px) scale(.98);}
 
-  .header-title {
-    font-family: 'Cinzel', serif;
-    font-size: clamp(2rem, 6vw, 3.5rem);
-    font-weight: 700;
-    letter-spacing: 0.06em;
-    color: var(--gold);
-    line-height: 1;
-    text-shadow: 0 0 60px rgba(200,169,110,0.25);
-    margin-bottom: 0.5rem;
-  }
+  .mode-icon{font-size:2rem;margin-bottom:1rem;display:block;position:relative;z-index:1;}
+  .mode-name{font-family:'Cinzel',serif;font-size:.85rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;margin-bottom:.5rem;position:relative;z-index:1;}
+  .mode-card.char .mode-name{color:var(--char);}
+  .mode-card.world .mode-name{color:var(--world);}
+  .mode-card.total .mode-name{color:var(--total);}
+  .mode-desc{font-size:.82rem;color:var(--text-muted);line-height:1.6;font-weight:300;position:relative;z-index:1;}
+  .mode-tags{margin-top:1rem;display:flex;flex-wrap:wrap;gap:4px;justify-content:center;position:relative;z-index:1;}
+  .mode-tag{font-family:'DM Mono',monospace;font-size:8px;letter-spacing:.1em;text-transform:uppercase;padding:2px 7px;border-radius:3px;border:1px solid var(--border);color:var(--text-muted);}
 
-  .header-sub {
-    font-size: 1rem;
-    color: var(--text-dim);
-    font-style: italic;
-    font-weight: 300;
-  }
+  .menu-footer{margin-top:3rem;font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.15em;color:var(--text-muted);opacity:0;animation:fup .7s ease .7s forwards;}
 
-  .stage {
-    width: var(--card-w);
-    height: 420px;
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 2.5rem;
-  }
+  /* ── GAME ── */
+  #screen-game{position:relative;justify-content:flex-start;padding-top:0;}
+  #screen-game::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;transition:background .6s ease;}
+  body.mode-character #screen-game::before{background:radial-gradient(ellipse 80% 50% at 50% -10%,rgba(200,169,110,.07) 0%,transparent 60%);}
+  body.mode-world     #screen-game::before{background:radial-gradient(ellipse 80% 50% at 50% -10%,rgba(110,170,200,.07) 0%,transparent 60%);}
+  body.mode-total     #screen-game::before{background:radial-gradient(ellipse 80% 50% at 50% -10%,rgba(168,110,200,.07) 0%,transparent 60%);}
 
-  .empty-state {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 16px;
-    opacity: 1;
-    transition: opacity 0.3s;
-  }
+  .game-inner{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;width:100%;padding:2.5rem 1rem 3rem;}
 
-  .empty-state.hidden { opacity: 0; pointer-events: none; }
+  .game-topbar{display:flex;align-items:center;justify-content:space-between;width:100%;max-width:500px;margin-bottom:2.5rem;}
+  .back-btn{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--text-muted);background:none;border:none;cursor:pointer;padding:6px 0;transition:color .2s;display:flex;align-items:center;gap:6px;}
+  .back-btn:hover{color:var(--text-dim);}
+  .game-badge{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.18em;text-transform:uppercase;padding:4px 10px;border-radius:4px;border:1px solid;}
+  body.mode-character .game-badge{color:var(--char);border-color:rgba(200,169,110,.3);}
+  body.mode-world     .game-badge{color:var(--world);border-color:rgba(110,170,200,.3);}
+  body.mode-total     .game-badge{color:var(--total);border-color:rgba(168,110,200,.3);}
 
-  .empty-orb {
-    width: 80px; height: 80px;
-    border-radius: 50%;
-    border: 1px solid var(--border);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 32px;
-    animation: orbPulse 3s ease-in-out infinite;
-  }
+  .stage{width:var(--card-w);height:420px;position:relative;display:flex;align-items:center;justify-content:center;margin-bottom:2.5rem;}
 
-  @keyframes orbPulse {
-    0%, 100% { box-shadow: 0 0 0 0 rgba(200,169,110,0); border-color: rgba(180,160,100,0.12); }
-    50% { box-shadow: 0 0 30px 4px rgba(200,169,110,0.08); border-color: rgba(180,160,100,0.28); }
-  }
+  .empty-state{display:flex;flex-direction:column;align-items:center;gap:16px;transition:opacity .3s;}
+  .empty-state.hidden{opacity:0;pointer-events:none;}
+  .empty-orb{width:80px;height:80px;border-radius:50%;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:32px;animation:op 3s ease-in-out infinite;}
+  @keyframes op{0%,100%{box-shadow:none;border-color:rgba(180,160,100,.12);}50%{box-shadow:0 0 30px 4px rgba(200,169,110,.08);border-color:rgba(180,160,100,.28);}}
+  .empty-text{font-family:'DM Mono',monospace;font-size:.8rem;color:var(--text-muted);letter-spacing:.08em;}
 
-  .empty-text {
-    font-size: 0.85rem;
-    color: var(--text-muted);
-    letter-spacing: 0.08em;
-    font-family: 'DM Mono', monospace;
-  }
+  .card{position:absolute;width:var(--card-w);background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:1.75rem 1.5rem 1.5rem;opacity:0;transform:translateY(24px) scale(.95);transition:none;pointer-events:none;}
+  .card.reveal{animation:cr .5s cubic-bezier(.22,1,.36,1) forwards;pointer-events:auto;}
+  .card.exit{animation:ce .25s ease forwards;}
+  @keyframes cr{0%{opacity:0;transform:translateY(24px) scale(.95);}100%{opacity:1;transform:translateY(0) scale(1);}}
+  @keyframes ce{0%{opacity:1;transform:translateY(0) scale(1);}100%{opacity:0;transform:translateY(-12px) scale(.97);}}
+  .card[data-rarity="uncommon"]{border-color:rgba(74,138,90,.35);}
+  .card[data-rarity="rare"]{border-color:rgba(58,110,168,.45);}
+  .card[data-rarity="epic"]{border-color:rgba(122,74,184,.5);box-shadow:0 0 30px rgba(122,74,184,.1);}
+  .card[data-rarity="legendary"]{border-color:rgba(184,112,32,.6);box-shadow:0 0 50px rgba(184,112,32,.15),0 0 100px rgba(184,112,32,.06);}
 
-  .card {
-    position: absolute;
-    width: var(--card-w);
-    background: var(--bg2);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 1.75rem 1.5rem 1.5rem;
-    opacity: 0;
-    transform: translateY(24px) scale(0.95);
-    transition: none;
-    pointer-events: none;
-  }
+  .card-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:1.25rem;}
+  .card-icon-wrap{width:52px;height:52px;border-radius:10px;border:1px solid var(--border);background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:26px;}
+  .card-meta{text-align:right;}
+  .card-type{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px;}
+  .rbadge{display:inline-block;font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;padding:3px 8px;border-radius:4px;border:1px solid;}
+  .rbadge.common{color:var(--common-c);border-color:var(--common-c);background:var(--common-bg);}
+  .rbadge.uncommon{color:var(--uncommon-c);border-color:var(--uncommon-c);background:var(--uncommon-bg);}
+  .rbadge.rare{color:var(--rare-c);border-color:var(--rare-c);background:var(--rare-bg);}
+  .rbadge.epic{color:var(--epic-c);border-color:var(--epic-c);background:var(--epic-bg);}
+  .rbadge.legendary{color:var(--legendary-c);border-color:var(--legendary-c);background:var(--legendary-bg);}
 
-  .card.reveal {
-    animation: cardReveal 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-    pointer-events: auto;
-  }
+  .card-divider{height:1px;background:var(--border);margin-bottom:1.1rem;}
+  .card-name{font-family:'Cinzel',serif;font-size:1.3rem;font-weight:600;color:var(--text);line-height:1.2;margin-bottom:.6rem;letter-spacing:.03em;}
+  .card[data-rarity="legendary"] .card-name{color:var(--gold-bright);}
+  .card[data-rarity="epic"] .card-name{color:#c4a0f0;}
+  .card-desc{font-size:.95rem;line-height:1.7;color:#9a9080;font-style:italic;font-weight:300;}
+  .card-stars{display:flex;gap:4px;margin-top:1.25rem;justify-content:flex-end;}
+  .star{width:6px;height:6px;border-radius:50%;background:var(--text-muted);}
+  .star.lit{background:var(--gold);box-shadow:0 0 6px rgba(200,169,110,.5);}
+  .card[data-rarity="epic"] .star.lit{background:#9a70e0;box-shadow:0 0 6px rgba(154,112,224,.5);}
+  .card[data-rarity="legendary"] .star.lit{background:var(--legendary-c);box-shadow:0 0 8px rgba(184,112,32,.7);}
 
-  .card.exit {
-    animation: cardExit 0.25s ease forwards;
-  }
+  .roll-area{display:flex;flex-direction:column;align-items:center;gap:12px;}
+  .roll-btn{position:relative;width:200px;padding:1rem 0;background:transparent;border-radius:8px;font-family:'Cinzel',serif;font-size:.9rem;font-weight:600;letter-spacing:.15em;text-transform:uppercase;cursor:pointer;transition:border-color .2s,color .2s,box-shadow .2s,transform .1s;overflow:hidden;}
+  .roll-btn span{position:relative;z-index:1;}
+  .roll-btn::before{content:'';position:absolute;inset:0;opacity:0;transition:opacity .3s;}
+  .roll-btn:hover::before{opacity:1;}
+  .roll-btn:active{transform:scale(.97);}
+  .roll-btn:disabled{opacity:.4;cursor:default;transform:none;}
+  body.mode-character .roll-btn{border:1px solid var(--gold-dim);color:var(--gold);}
+  body.mode-character .roll-btn:hover{border-color:var(--gold);color:var(--gold-bright);box-shadow:0 0 20px rgba(200,169,110,.1);}
+  body.mode-character .roll-btn::before{background:radial-gradient(ellipse 80% 80% at 50% 50%,rgba(200,169,110,.08) 0%,transparent 70%);}
+  body.mode-world .roll-btn{border:1px solid rgba(110,170,200,.4);color:var(--world);}
+  body.mode-world .roll-btn:hover{border-color:var(--world);box-shadow:0 0 20px rgba(110,170,200,.1);}
+  body.mode-world .roll-btn::before{background:radial-gradient(ellipse 80% 80% at 50% 50%,rgba(110,170,200,.08) 0%,transparent 70%);}
+  body.mode-total .roll-btn{border:1px solid rgba(168,110,200,.4);color:var(--total);}
+  body.mode-total .roll-btn:hover{border-color:var(--total);box-shadow:0 0 20px rgba(168,110,200,.1);}
+  body.mode-total .roll-btn::before{background:radial-gradient(ellipse 80% 80% at 50% 50%,rgba(168,110,200,.08) 0%,transparent 70%);}
 
-  @keyframes cardReveal {
-    0% { opacity: 0; transform: translateY(24px) scale(0.95); }
-    100% { opacity: 1; transform: translateY(0) scale(1); }
-  }
+  .roll-count{font-family:'DM Mono',monospace;font-size:10px;color:var(--text-muted);letter-spacing:.1em;}
 
-  @keyframes cardExit {
-    0% { opacity: 1; transform: translateY(0) scale(1); }
-    100% { opacity: 0; transform: translateY(-12px) scale(0.97); }
-  }
+  .history-section{margin-top:3rem;width:100%;max-width:700px;opacity:0;transition:opacity .6s;}
+  .history-section.visible{opacity:1;}
+  .history-label{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:var(--text-muted);margin-bottom:1rem;text-align:center;}
+  .history-grid{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;}
+  .hchip{display:flex;align-items:center;gap:6px;padding:5px 10px 5px 8px;border-radius:6px;border:1px solid var(--border);background:var(--bg2);font-size:12px;color:var(--text-dim);font-family:'DM Mono',monospace;animation:cin .3s ease forwards;opacity:0;}
+  @keyframes cin{from{opacity:0;transform:scale(.9);}to{opacity:1;transform:scale(1);}}
+  .hchip .ci{font-size:14px;}
+  .hchip.common{border-color:rgba(122,120,112,.25);}
+  .hchip.uncommon{border-color:rgba(74,138,90,.3);color:#4a8a5a;}
+  .hchip.rare{border-color:rgba(58,110,168,.35);color:#3a6ea8;}
+  .hchip.epic{border-color:rgba(122,74,184,.4);color:#9a60e0;}
+  .hchip.legendary{border-color:rgba(184,112,32,.5);color:var(--legendary-c);}
 
-  .card[data-rarity="uncommon"] { border-color: rgba(74,138,90,0.35); }
-  .card[data-rarity="rare"] { border-color: rgba(58,110,168,0.45); }
-  .card[data-rarity="epic"] { border-color: rgba(122,74,184,0.5); box-shadow: 0 0 30px rgba(122,74,184,0.1); }
-  .card[data-rarity="legendary"] {
-    border-color: rgba(184,112,32,0.6);
-    box-shadow: 0 0 50px rgba(184,112,32,0.15), 0 0 100px rgba(184,112,32,0.06);
-  }
-
-  .card-top {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    margin-bottom: 1.25rem;
-  }
-
-  .card-icon-wrap {
-    width: 52px; height: 52px;
-    border-radius: 10px;
-    border: 1px solid var(--border);
-    background: var(--bg3);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 26px;
-  }
-
-  .card-meta { text-align: right; }
-
-  .card-type {
-    font-family: 'DM Mono', monospace;
-    font-size: 9px;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    color: var(--text-muted);
-    margin-bottom: 6px;
-  }
-
-  .rarity-badge {
-    display: inline-block;
-    font-family: 'DM Mono', monospace;
-    font-size: 9px;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    padding: 3px 8px;
-    border-radius: 4px;
-    border: 1px solid;
-  }
-
-  .rarity-badge.common   { color: var(--common);    border-color: var(--common);    background: var(--common-bg); }
-  .rarity-badge.uncommon { color: var(--uncommon);  border-color: var(--uncommon);  background: var(--uncommon-bg); }
-  .rarity-badge.rare     { color: var(--rare);      border-color: var(--rare);      background: var(--rare-bg); }
-  .rarity-badge.epic     { color: var(--epic);      border-color: var(--epic);      background: var(--epic-bg); }
-  .rarity-badge.legendary{ color: var(--legendary); border-color: var(--legendary); background: var(--legendary-bg); }
-
-  .card-divider {
-    height: 1px;
-    background: var(--border);
-    margin-bottom: 1.1rem;
-  }
-
-  .card-name {
-    font-family: 'Cinzel', serif;
-    font-size: 1.3rem;
-    font-weight: 600;
-    color: var(--text);
-    line-height: 1.2;
-    margin-bottom: 0.6rem;
-    letter-spacing: 0.03em;
-  }
-
-  .card[data-rarity="legendary"] .card-name { color: var(--gold-bright); }
-  .card[data-rarity="epic"] .card-name { color: #c4a0f0; }
-
-  .card-desc {
-    font-size: 0.95rem;
-    line-height: 1.7;
-    color: #9a9080;
-    font-style: italic;
-    font-weight: 300;
-  }
-
-  .card-stars {
-    display: flex;
-    gap: 4px;
-    margin-top: 1.25rem;
-    justify-content: flex-end;
-  }
-
-  .star {
-    width: 6px; height: 6px;
-    border-radius: 50%;
-    background: var(--text-muted);
-  }
-
-  .star.lit { background: var(--gold); box-shadow: 0 0 6px rgba(200,169,110,0.5); }
-  .card[data-rarity="epic"] .star.lit { background: #9a70e0; box-shadow: 0 0 6px rgba(154,112,224,0.5); }
-  .card[data-rarity="legendary"] .star.lit { background: var(--legendary); box-shadow: 0 0 8px rgba(184,112,32,0.7); }
-
-  .legendary-flash {
-    position: fixed; inset: 0;
-    background: radial-gradient(ellipse 60% 60% at 50% 50%, rgba(184,112,32,0.18) 0%, transparent 70%);
-    opacity: 0;
-    pointer-events: none;
-    z-index: 99;
-  }
-
-  .legendary-flash.fire {
-    animation: flash 1.2s ease forwards;
-  }
-
-  @keyframes flash {
-    0% { opacity: 0; }
-    20% { opacity: 1; }
-    100% { opacity: 0; }
-  }
-
-  .roll-area {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 12px;
-    opacity: 0;
-    animation: fadeUp 0.8s ease 0.4s forwards;
-  }
-
-  .roll-btn {
-    position: relative;
-    width: 200px;
-    padding: 1rem 0;
-    background: transparent;
-    border: 1px solid var(--gold-dim);
-    border-radius: 8px;
-    color: var(--gold);
-    font-family: 'Cinzel', serif;
-    font-size: 0.9rem;
-    font-weight: 600;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    cursor: pointer;
-    transition: border-color 0.2s, color 0.2s, box-shadow 0.2s, transform 0.1s;
-    overflow: hidden;
-  }
-
-  .roll-btn::before {
-    content: '';
-    position: absolute; inset: 0;
-    background: radial-gradient(ellipse 80% 80% at 50% 50%, rgba(200,169,110,0.08) 0%, transparent 70%);
-    opacity: 0;
-    transition: opacity 0.3s;
-  }
-
-  .roll-btn:hover { border-color: var(--gold); color: var(--gold-bright); box-shadow: 0 0 20px rgba(200,169,110,0.1); }
-  .roll-btn:hover::before { opacity: 1; }
-  .roll-btn:active { transform: scale(0.97); }
-  .roll-btn:disabled { opacity: 0.4; cursor: default; transform: none; }
-  .roll-btn span { position: relative; z-index: 1; }
-
-  .roll-count {
-    font-family: 'DM Mono', monospace;
-    font-size: 10px;
-    color: var(--text-muted);
-    letter-spacing: 0.1em;
-  }
-
-  .history-section {
-    margin-top: 3.5rem;
-    width: 100%;
-    max-width: 700px;
-    opacity: 0;
-    transition: opacity 0.6s;
-  }
-
-  .history-section.visible { opacity: 1; }
-
-  .history-label {
-    font-family: 'DM Mono', monospace;
-    font-size: 9px;
-    letter-spacing: 0.22em;
-    text-transform: uppercase;
-    color: var(--text-muted);
-    margin-bottom: 1rem;
-    text-align: center;
-  }
-
-  .history-grid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    justify-content: center;
-  }
-
-  .history-chip {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 5px 10px 5px 8px;
-    border-radius: 6px;
-    border: 1px solid var(--border);
-    background: var(--bg2);
-    font-size: 12px;
-    color: var(--text-dim);
-    font-family: 'DM Mono', monospace;
-    animation: chipIn 0.3s ease forwards;
-    opacity: 0;
-  }
-
-  @keyframes chipIn {
-    from { opacity: 0; transform: scale(0.9); }
-    to { opacity: 1; transform: scale(1); }
-  }
-
-  .history-chip .chip-icon { font-size: 14px; }
-  .history-chip.common   { border-color: rgba(122,120,112,0.25); }
-  .history-chip.uncommon { border-color: rgba(74,138,90,0.3); color: #4a8a5a; }
-  .history-chip.rare     { border-color: rgba(58,110,168,0.35); color: #3a6ea8; }
-  .history-chip.epic     { border-color: rgba(122,74,184,0.4); color: #9a60e0; }
-  .history-chip.legendary{ border-color: rgba(184,112,32,0.5); color: var(--legendary); }
-
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(16px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-
-  @media (max-width: 380px) {
-    :root { --card-w: 290px; }
-    .stage { height: 400px; }
-  }
+  @keyframes fup{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
+  @media(max-width:380px){:root{--card-w:290px;}.stage{height:400px;}}
 </style>
 </head>
 <body>
 
-<div class="legendary-flash" id="lflash"></div>
+<div class="lflash" id="lflash"></div>
 
-<div class="page">
-  <header class="header">
-    <div class="header-eyebrow">Character Mode · v0.1</div>
-    <h1 class="header-title">Chaos Gacha</h1>
-    <p class="header-sub">Roll the unknown. Claim what emerges.</p>
-  </header>
+<!-- MENU -->
+<div class="screen active" id="screen-menu">
+  <div class="menu-inner">
+    <div class="menu-eyebrow">Choose your path</div>
+    <h1 class="menu-title">Fate Engine</h1>
+    <p class="menu-tag">Roll the unknown. Shape what emerges.</p>
 
-  <div class="stage" id="stage">
-    <div class="empty-state" id="emptyState">
-      <div class="empty-orb">✦</div>
-      <span class="empty-text">awaiting your roll</span>
-    </div>
-    <div class="card" id="card">
-      <div class="card-top">
-        <div class="card-icon-wrap" id="cIcon"></div>
-        <div class="card-meta">
-          <div class="card-type" id="cType"></div>
-          <span class="rarity-badge" id="cRarity"></span>
+    <div class="mode-cards">
+      <div class="mode-card char" onclick="enterMode('character')">
+        <span class="mode-icon">⚔️</span>
+        <div class="mode-name">Character</div>
+        <div class="mode-desc">Forge yourself from the chaos. Roll abilities, traits, items, familiars and titles.</div>
+        <div class="mode-tags">
+          <span class="mode-tag">Traits</span>
+          <span class="mode-tag">Powers</span>
+          <span class="mode-tag">Items</span>
+          <span class="mode-tag">Familiars</span>
+          <span class="mode-tag">Titles</span>
         </div>
       </div>
-      <div class="card-divider"></div>
-      <div class="card-name" id="cName"></div>
-      <div class="card-desc" id="cDesc"></div>
-      <div class="card-stars" id="cStars"></div>
+      <div class="mode-card world" onclick="enterMode('world')">
+        <span class="mode-icon">🌍</span>
+        <div class="mode-name">World</div>
+        <div class="mode-desc">Reshape reality itself. Roll biomes, factions, materials and species into existence.</div>
+        <div class="mode-tags">
+          <span class="mode-tag">Biomes</span>
+          <span class="mode-tag">Factions</span>
+          <span class="mode-tag">Materials</span>
+          <span class="mode-tag">Species</span>
+        </div>
+      </div>
+      <div class="mode-card total" onclick="enterMode('total')">
+        <span class="mode-icon">✦</span>
+        <div class="mode-name">Total</div>
+        <div class="mode-desc">Character and world intertwined. Every roll could be anything. Pure chaos.</div>
+        <div class="mode-tags">
+          <span class="mode-tag">All pools</span>
+          <span class="mode-tag">Combined</span>
+        </div>
+      </div>
     </div>
-  </div>
 
-  <div class="roll-area">
-    <button class="roll-btn" id="rollBtn" onclick="roll()">
-      <span id="btnLabel">Roll</span>
-    </button>
-    <span class="roll-count" id="rollCount">0 rolls</span>
+    <div class="menu-footer">v0.2 · fate-engine</div>
   </div>
+</div>
 
-  <div class="history-section" id="historySection">
-    <div class="history-label">Roll history</div>
-    <div class="history-grid" id="historyGrid"></div>
+<!-- GAME -->
+<div class="screen" id="screen-game">
+  <div class="game-inner">
+    <div class="game-topbar">
+      <button class="back-btn" onclick="goBack()">← Back</button>
+      <span class="game-badge" id="modeBadge">Character Mode</span>
+    </div>
+
+    <div class="stage" id="stage">
+      <div class="empty-state" id="emptyState">
+        <div class="empty-orb">✦</div>
+        <span class="empty-text">awaiting your roll</span>
+      </div>
+      <div class="card" id="card">
+        <div class="card-top">
+          <div class="card-icon-wrap" id="cIcon"></div>
+          <div class="card-meta">
+            <div class="card-type" id="cType"></div>
+            <span class="rbadge" id="cRarity"></span>
+          </div>
+        </div>
+        <div class="card-divider"></div>
+        <div class="card-name" id="cName"></div>
+        <div class="card-desc" id="cDesc"></div>
+        <div class="card-stars" id="cStars"></div>
+      </div>
+    </div>
+
+    <div class="roll-area">
+      <button class="roll-btn" id="rollBtn" onclick="roll()"><span id="btnLabel">Roll</span></button>
+      <span class="roll-count" id="rollCount">0 rolls</span>
+    </div>
+
+    <div class="history-section" id="historySection">
+      <div class="history-label">Roll history</div>
+      <div class="history-grid" id="historyGrid"></div>
+    </div>
   </div>
 </div>
 
 <script>
-const CARDS = [
-  { type:"Ability", icon:"⚡", name:"Static Pulse", rarity:"common", stars:1,
-    desc:"You can release bursts of electrical energy from your palms. Enough to stun a man, or charge a dead phone." },
-  { type:"Ability", icon:"🌊", name:"Tidecall", rarity:"uncommon", stars:2,
-    desc:"Water within 30 meters bends to your will. Rivers slow, rain lifts upward, and tears freeze mid-cheek." },
-  { type:"Ability", icon:"🔥", name:"Soulflame", rarity:"rare", stars:3,
-    desc:"You burn — not with fire, but with purpose. Wounds close faster. Fear burns away. So do lies." },
-  { type:"Ability", icon:"🌀", name:"Void Step", rarity:"epic", stars:4,
-    desc:"Once per hour you may step sideways through space. No sound. No trace. Just the faint smell of absence." },
-  { type:"Ability", icon:"☀️", name:"Sunborn", rarity:"legendary", stars:5,
-    desc:"You were kissed by something ancient. Light bends around you. Darkness refuses to stay. Gods notice." },
-  { type:"Ability", icon:"🧊", name:"Still Air", rarity:"common", stars:1,
-    desc:"You can make a room go absolutely silent. Useful in libraries. Terrifying in arguments." },
-  { type:"Ability", icon:"🌑", name:"Umbral Touch", rarity:"uncommon", stars:2,
-    desc:"Whatever you hold in darkness becomes invisible. The darkness doesn't need to be total. Just enough." },
-  { type:"Ability", icon:"🩸", name:"Blood Pact", rarity:"rare", stars:3,
-    desc:"A wound made by your hand becomes a contract. The injured party cannot willingly harm you for seven days." },
-  { type:"Ability", icon:"💀", name:"Necrospeak", rarity:"epic", stars:4,
-    desc:"The recently dead can hear you. They rarely answer. When they do, they are always right." },
-  { type:"Ability", icon:"⚗️", name:"The Transmutation", rarity:"legendary", stars:5,
-    desc:"You may change one thing about reality per moon. Small things. The size of a lie. The color of grief. The weight of a name." },
-  { type:"Trait", icon:"🧠", name:"Eidetic Memory", rarity:"uncommon", stars:2,
-    desc:"You forget nothing. Every face, every insult, every map you glanced at in a dream. A blessing and a curse." },
-  { type:"Trait", icon:"🦴", name:"Ironblood", rarity:"common", stars:1,
-    desc:"Your bones are harder than they should be. Doctors are confused. You are not." },
-  { type:"Trait", icon:"👁️", name:"The Third Sight", rarity:"rare", stars:3,
-    desc:"You see intent before action. Not the future — just a half-second delay the world hasn't corrected yet." },
-  { type:"Trait", icon:"🌒", name:"Shade-born", rarity:"epic", stars:4,
-    desc:"Shadows do not fall on you correctly. They follow a different you — one that moves with more confidence." },
-  { type:"Trait", icon:"🕯️", name:"Cursed Luck", rarity:"common", stars:1,
-    desc:"Things go wrong for you, then go right, then go wrong in ways that save your life. You've stopped questioning it." },
-  { type:"Trait", icon:"🌿", name:"Root Memory", rarity:"uncommon", stars:2,
-    desc:"Plants remember you. They lean toward you. Old forests whisper your name to each other when you pass." },
-  { type:"Trait", icon:"🐺", name:"Apex Instinct", rarity:"rare", stars:3,
-    desc:"You know when something is about to attack. Not through logic. Through something older. You're never wrong." },
-  { type:"Trait", icon:"⚖️", name:"Sovereign Will", rarity:"legendary", stars:5,
-    desc:"You cannot be compelled. Not by magic, not by torture, not by love. Your choices are entirely your own. This is lonelier than it sounds." },
-  { type:"Item", icon:"🗡️", name:"Forgetful Blade", rarity:"uncommon", stars:2,
-    desc:"A knife that makes wounds forget to hurt. Useful in many ways. Dangerous in most of them." },
-  { type:"Item", icon:"📿", name:"Waystone Necklace", rarity:"common", stars:1,
-    desc:"Always points home. The definition of home is debated." },
-  { type:"Item", icon:"📖", name:"The Unwritten Book", rarity:"rare", stars:3,
-    desc:"A leather journal with 300 blank pages. Whatever you write in it by morning has happened by noon." },
-  { type:"Item", icon:"🪞", name:"Mirror of Becoming", rarity:"legendary", stars:5,
-    desc:"Shows you who you could have been. Some people can't put it down. Some smash it immediately. Both are correct." },
-  { type:"Item", icon:"🧲", name:"The Binding Coin", rarity:"uncommon", stars:2,
-    desc:"Flip it to make a deal. The coin ensures both parties keep their word. It has never been wrong. It has never been kind." },
-  { type:"Item", icon:"⌛", name:"Borrowed Hour", rarity:"epic", stars:4,
-    desc:"A pocket watch that runs backward. Break it to undo the last hour of your life. It only works once. You've been carrying it for years." },
-  { type:"Item", icon:"🎭", name:"The Hollow Mask", rarity:"rare", stars:3,
-    desc:"Wear it to become someone else. Not in appearance — in soul. People believe you are them completely. You start to, as well." },
-  { type:"Item", icon:"🗺️", name:"Dead Man's Map", rarity:"common", stars:1,
-    desc:"A map of a place that doesn't exist yet. The roads look familiar." },
-  { type:"Familiar", icon:"🦊", name:"Ember Fox", rarity:"uncommon", stars:2,
-    desc:"A small fox with a perpetually warm tail. Loyal, clever, and absolutely uninterested in your enemies." },
-  { type:"Familiar", icon:"🦅", name:"The Pale Hawk", rarity:"rare", stars:3,
-    desc:"Flies ahead. Returns with information it shouldn't have. Never explains how." },
-  { type:"Familiar", icon:"🐉", name:"Ashling", rarity:"legendary", stars:5,
-    desc:"A dragon the size of a cat who insists it is not a dragon. Do not argue. It will remember." },
-  { type:"Familiar", icon:"🐈‍⬛", name:"The Nameless Cat", rarity:"common", stars:1,
-    desc:"Follows you. You did not invite it. It has saved your life twice and you still don't know its name." },
-  { type:"Familiar", icon:"🌙", name:"Moonshade Hound", rarity:"epic", stars:4,
-    desc:"A wolf made of the space between stars. Only visible at night. Only loyal when it chooses to be." },
-  { type:"Familiar", icon:"🦋", name:"The Oracle Moth", rarity:"uncommon", stars:2,
-    desc:"Lands on the thing you need to pay attention to. Has never been wrong. Is deeply inconvenient about it." },
-  { type:"Title", icon:"👑", name:"The Undefeated", rarity:"epic", stars:4,
-    desc:"You have not yet lost. Whether through skill, luck, or the quiet mercy of fate — you are still standing." },
-  { type:"Title", icon:"🕊️", name:"Peacemaker", rarity:"common", stars:1,
-    desc:"People calm down around you. Wars have ended because you walked into the room. You're tired." },
-  { type:"Title", icon:"🔱", name:"Twice-Judged", rarity:"rare", stars:3,
-    desc:"You have stood before a court of some kind — mortal, divine, or otherwise — and walked out both times." },
-  { type:"Title", icon:"⚰️", name:"The One Who Returns", rarity:"legendary", stars:5,
-    desc:"You have died. Officially. There is paperwork. You are inconveniently alive and no one knows what to do with you." },
-  { type:"Title", icon:"🎯", name:"The Marked", rarity:"uncommon", stars:2,
-    desc:"Something powerful chose you for a reason it has not shared. People can sense it. Most step aside." },
-  { type:"Title", icon:"🧩", name:"Wildcard", rarity:"rare", stars:3,
-    desc:"You don't fit any prophecy. You don't fit any category. This makes you the most dangerous thing in the room." },
+const CC=[
+  {type:"Ability",icon:"⚡",name:"Static Pulse",rarity:"common",stars:1,desc:"You can release bursts of electrical energy from your palms. Enough to stun a man, or charge a dead phone."},
+  {type:"Ability",icon:"🌊",name:"Tidecall",rarity:"uncommon",stars:2,desc:"Water within 30 meters bends to your will. Rivers slow, rain lifts upward, and tears freeze mid-cheek."},
+  {type:"Ability",icon:"🔥",name:"Soulflame",rarity:"rare",stars:3,desc:"You burn — not with fire, but with purpose. Wounds close faster. Fear burns away. So do lies."},
+  {type:"Ability",icon:"🌀",name:"Void Step",rarity:"epic",stars:4,desc:"Once per hour you may step sideways through space. No sound. No trace. Just the faint smell of absence."},
+  {type:"Ability",icon:"☀️",name:"Sunborn",rarity:"legendary",stars:5,desc:"You were kissed by something ancient. Light bends around you. Darkness refuses to stay. Gods notice."},
+  {type:"Ability",icon:"🧊",name:"Still Air",rarity:"common",stars:1,desc:"You can make a room go absolutely silent. Useful in libraries. Terrifying in arguments."},
+  {type:"Ability",icon:"🌑",name:"Umbral Touch",rarity:"uncommon",stars:2,desc:"Whatever you hold in darkness becomes invisible. The darkness doesn't need to be total. Just enough."},
+  {type:"Ability",icon:"🩸",name:"Blood Pact",rarity:"rare",stars:3,desc:"A wound made by your hand becomes a contract. The injured party cannot willingly harm you for seven days."},
+  {type:"Ability",icon:"💀",name:"Necrospeak",rarity:"epic",stars:4,desc:"The recently dead can hear you. They rarely answer. When they do, they are always right."},
+  {type:"Ability",icon:"⚗️",name:"The Transmutation",rarity:"legendary",stars:5,desc:"You may change one thing about reality per moon. Small things. The size of a lie. The color of grief. The weight of a name."},
+  {type:"Trait",icon:"🧠",name:"Eidetic Memory",rarity:"uncommon",stars:2,desc:"You forget nothing. Every face, every insult, every map you glanced at in a dream. A blessing and a curse."},
+  {type:"Trait",icon:"🦴",name:"Ironblood",rarity:"common",stars:1,desc:"Your bones are harder than they should be. Doctors are confused. You are not."},
+  {type:"Trait",icon:"👁️",name:"The Third Sight",rarity:"rare",stars:3,desc:"You see intent before action. Not the future — just a half-second delay the world hasn't corrected yet."},
+  {type:"Trait",icon:"🌒",name:"Shade-born",rarity:"epic",stars:4,desc:"Shadows do not fall on you correctly. They follow a different you — one that moves with more confidence."},
+  {type:"Trait",icon:"🕯️",name:"Cursed Luck",rarity:"common",stars:1,desc:"Things go wrong for you, then go right, then go wrong in ways that save your life. You've stopped questioning it."},
+  {type:"Trait",icon:"🌿",name:"Root Memory",rarity:"uncommon",stars:2,desc:"Plants remember you. They lean toward you. Old forests whisper your name to each other when you pass."},
+  {type:"Trait",icon:"🐺",name:"Apex Instinct",rarity:"rare",stars:3,desc:"You know when something is about to attack. Not through logic. Through something older. You're never wrong."},
+  {type:"Trait",icon:"⚖️",name:"Sovereign Will",rarity:"legendary",stars:5,desc:"You cannot be compelled. Not by magic, not by torture, not by love. Your choices are entirely your own. This is lonelier than it sounds."},
+  {type:"Item",icon:"🗡️",name:"Forgetful Blade",rarity:"uncommon",stars:2,desc:"A knife that makes wounds forget to hurt. Useful in many ways. Dangerous in most of them."},
+  {type:"Item",icon:"📿",name:"Waystone Necklace",rarity:"common",stars:1,desc:"Always points home. The definition of home is debated."},
+  {type:"Item",icon:"📖",name:"The Unwritten Book",rarity:"rare",stars:3,desc:"A leather journal with 300 blank pages. Whatever you write in it by morning has happened by noon."},
+  {type:"Item",icon:"🪞",name:"Mirror of Becoming",rarity:"legendary",stars:5,desc:"Shows you who you could have been. Some people can't put it down. Some smash it immediately. Both are correct."},
+  {type:"Item",icon:"🧲",name:"The Binding Coin",rarity:"uncommon",stars:2,desc:"Flip it to make a deal. The coin ensures both parties keep their word. It has never been wrong. It has never been kind."},
+  {type:"Item",icon:"⌛",name:"Borrowed Hour",rarity:"epic",stars:4,desc:"A pocket watch that runs backward. Break it to undo the last hour of your life. It only works once. You've been carrying it for years."},
+  {type:"Item",icon:"🎭",name:"The Hollow Mask",rarity:"rare",stars:3,desc:"Wear it to become someone else. Not in appearance — in soul. People believe you are them completely. You start to, as well."},
+  {type:"Item",icon:"🗺️",name:"Dead Man's Map",rarity:"common",stars:1,desc:"A map of a place that doesn't exist yet. The roads look familiar."},
+  {type:"Familiar",icon:"🦊",name:"Ember Fox",rarity:"uncommon",stars:2,desc:"A small fox with a perpetually warm tail. Loyal, clever, and absolutely uninterested in your enemies."},
+  {type:"Familiar",icon:"🦅",name:"The Pale Hawk",rarity:"rare",stars:3,desc:"Flies ahead. Returns with information it shouldn't have. Never explains how."},
+  {type:"Familiar",icon:"🐉",name:"Ashling",rarity:"legendary",stars:5,desc:"A dragon the size of a cat who insists it is not a dragon. Do not argue. It will remember."},
+  {type:"Familiar",icon:"🐈‍⬛",name:"The Nameless Cat",rarity:"common",stars:1,desc:"Follows you. You did not invite it. It has saved your life twice and you still don't know its name."},
+  {type:"Familiar",icon:"🌙",name:"Moonshade Hound",rarity:"epic",stars:4,desc:"A wolf made of the space between stars. Only visible at night. Only loyal when it chooses to be."},
+  {type:"Familiar",icon:"🦋",name:"The Oracle Moth",rarity:"uncommon",stars:2,desc:"Lands on the thing you need to pay attention to. Has never been wrong. Is deeply inconvenient about it."},
+  {type:"Title",icon:"👑",name:"The Undefeated",rarity:"epic",stars:4,desc:"You have not yet lost. Whether through skill, luck, or the quiet mercy of fate — you are still standing."},
+  {type:"Title",icon:"🕊️",name:"Peacemaker",rarity:"common",stars:1,desc:"People calm down around you. Wars have ended because you walked into the room. You're tired."},
+  {type:"Title",icon:"🔱",name:"Twice-Judged",rarity:"rare",stars:3,desc:"You have stood before a court of some kind — mortal, divine, or otherwise — and walked out both times."},
+  {type:"Title",icon:"⚰️",name:"The One Who Returns",rarity:"legendary",stars:5,desc:"You have died. Officially. There is paperwork. You are inconveniently alive and no one knows what to do with you."},
+  {type:"Title",icon:"🎯",name:"The Marked",rarity:"uncommon",stars:2,desc:"Something powerful chose you for a reason it has not shared. People can sense it. Most step aside."},
+  {type:"Title",icon:"🧩",name:"Wildcard",rarity:"rare",stars:3,desc:"You don't fit any prophecy. You don't fit any category. This makes you the most dangerous thing in the room."},
 ];
 
-const WEIGHTS = { common:40, uncommon:30, rare:18, epic:9, legendary:3 };
-let rollCount = 0;
-let rolling = false;
-let historyShown = false;
+const WC=[
+  {type:"Biome",icon:"🌋",name:"The Ashfields",rarity:"uncommon",stars:2,desc:"A continent of hardened lava and ember-soil where heat-resistant crops grow in volcanic ash. The sky is always orange at noon."},
+  {type:"Biome",icon:"🌊",name:"The Drowned Shelf",rarity:"common",stars:1,desc:"A shallow sea covering what was once a great plain. Ancient towers still rise above the waterline. Things live in them."},
+  {type:"Biome",icon:"🌲",name:"The Mirrorwood",rarity:"rare",stars:3,desc:"A forest where every tree grows an exact reflection of the one opposite it. Navigation is impossible. Compasses spin. People return changed."},
+  {type:"Biome",icon:"❄️",name:"The Still Tundra",rarity:"common",stars:1,desc:"A frozen expanse so silent that speech feels wrong. Hunters here communicate in hand signs passed down for 40 generations."},
+  {type:"Biome",icon:"🌌",name:"The Veilsteppe",rarity:"epic",stars:4,desc:"A grassland that exists partially in another plane. At dusk, you can see through the ground to a sky below your feet. Travelers go mad or transcendent. Rarely in-between."},
+  {type:"Biome",icon:"🏜️",name:"The Glass Desert",rarity:"rare",stars:3,desc:"Sand fused into glass by an ancient catastrophe. The surface reflects everything. At noon, the entire desert becomes a mirror and can be seen from space."},
+  {type:"Biome",icon:"🌿",name:"The Rootdeep",rarity:"uncommon",stars:2,desc:"A subterranean ecosystem built around the roots of ancient trees. Entire civilizations have never seen sunlight. They worship the roots as gods."},
+  {type:"Biome",icon:"🌀",name:"The Wound",rarity:"legendary",stars:5,desc:"A region where reality was torn and never healed. Physics works differently here. Time is nonlinear. Armies have entered and emerged centuries apart."},
+  {type:"Faction",icon:"⚜️",name:"The Pale Compact",rarity:"uncommon",stars:2,desc:"A merchants' alliance that secretly controls grain supply across six nations. They have never fought a war. They have ended eleven."},
+  {type:"Faction",icon:"🔮",name:"The Unbound Circle",rarity:"rare",stars:3,desc:"Mages who rejected institutional magic and now practice in secret. Their spells are unpredictable. Their loyalty is to knowledge, not kingdoms."},
+  {type:"Faction",icon:"⚔️",name:"The Ironless",rarity:"common",stars:1,desc:"A warrior clan that refuses to use metal weapons. They are considered primitive. They have never been conquered."},
+  {type:"Faction",icon:"🕯️",name:"Keepers of the Last Name",rarity:"epic",stars:4,desc:"A secret order that memorizes the names of every person who has ever died without record. They believe unnamed dead become monsters. They may be right."},
+  {type:"Faction",icon:"🌑",name:"The Hollow Court",rarity:"legendary",stars:5,desc:"A government that rules from a city no one can find. Their edicts arrive by raven. Their taxes are collected by agents who appear, take what is owed, and vanish. No one has ever refused twice."},
+  {type:"Faction",icon:"🌿",name:"The Green Debt",rarity:"uncommon",stars:2,desc:"Druids who believe all civilization owes a debt to the land. They collect. Slowly. Patiently. With interest."},
+  {type:"Material",icon:"💎",name:"Voidglass",rarity:"epic",stars:4,desc:"A black transparent mineral that absorbs light. Objects placed inside it become invisible and weightless. The mineral itself is impossible to cut."},
+  {type:"Material",icon:"🔩",name:"Ashiron",rarity:"common",stars:1,desc:"Metal smelted from volcanic rock. Cheaper than steel, twice as brittle, but it never rusts and holds an edge for decades."},
+  {type:"Material",icon:"🌿",name:"Breathmoss",rarity:"uncommon",stars:2,desc:"A moss that produces oxygen in extreme quantities. Cities in sealed caverns are built around it. It dies if it hears music."},
+  {type:"Material",icon:"⚡",name:"Stormthread",rarity:"rare",stars:3,desc:"Fiber harvested from the edge of lightning strikes. Clothing woven from it conducts electricity harmlessly around the body. Extremely difficult to produce. Extremely sought after."},
+  {type:"Material",icon:"✨",name:"Mirrorstone",rarity:"legendary",stars:5,desc:"A mineral that reflects not light but fate. Look into it and see the most likely version of your death. Banned in most nations. Collected obsessively by others."},
+  {type:"Material",icon:"🦴",name:"Deepbone",rarity:"uncommon",stars:2,desc:"Fossilized remains of creatures that lived before recorded history. Nearly indestructible. Something about it makes animals uneasy."},
+  {type:"Species",icon:"👁️",name:"The Woven",rarity:"rare",stars:3,desc:"Humanoids born with threads of visible light connecting them to nearby people. The threads show emotion. They cannot lie. They are exhausting to be around."},
+  {type:"Species",icon:"🌿",name:"Rootkin",rarity:"uncommon",stars:2,desc:"Plant-humanoid hybrids that photosynthesize. They sleep standing in sunlight. They do not eat. They are deeply patient and slightly smug about it."},
+  {type:"Species",icon:"🦇",name:"The Echoveil",rarity:"common",stars:1,desc:"A blind species that navigates entirely by sound. Their cities are built for hearing, not sight. They find silence threatening and are never, ever quiet."},
+  {type:"Species",icon:"🌊",name:"Tidecallers",rarity:"epic",stars:4,desc:"Aquatic humanoids who can survive on land for up to 40 years before needing to return to deep water. Many have forgotten they are not human. The sea has not forgotten them."},
+  {type:"Species",icon:"⚰️",name:"The Twice-Born",rarity:"legendary",stars:5,desc:"A species that dies once in youth and resurrects changed. The second life is longer. The memories of death remain. They rule most of the oldest empires."},
+  {type:"Species",icon:"🔮",name:"Glassborn",rarity:"rare",stars:3,desc:"Creatures with translucent skin through which their organs are clearly visible. They are considered deeply beautiful in some cultures, deeply unsettling in others. Both are right."},
+];
 
-function buildPool() {
-  const pool = [];
-  CARDS.forEach(c => {
-    const w = WEIGHTS[c.rarity] || 1;
-    for (let i = 0; i < w; i++) pool.push(c);
-  });
-  return pool;
+const W={common:40,uncommon:30,rare:18,epic:9,legendary:3};
+function mkPool(arr){const p=[];arr.forEach(c=>{for(let i=0;i<(W[c.rarity]||1);i++)p.push(c);});return p;}
+const CP=mkPool(CC), WP=mkPool(WC), TP=mkPool([...CC,...WC]);
+
+let mode=null,rc=0,rolling=false,hShown=false;
+
+function enterMode(m){
+  mode=m; rc=0; rolling=false; hShown=false;
+  document.body.className='mode-'+m;
+  const labels={character:'Character Mode',world:'World Mode',total:'Total Mode'};
+  document.getElementById('modeBadge').textContent=labels[m];
+  const card=document.getElementById('card');
+  card.classList.remove('reveal','exit'); card.style.opacity='0';
+  document.getElementById('emptyState').classList.remove('hidden');
+  document.getElementById('rollCount').textContent='0 rolls';
+  document.getElementById('btnLabel').textContent='Roll';
+  document.getElementById('rollBtn').disabled=false;
+  document.getElementById('historySection').classList.remove('visible');
+  document.getElementById('historyGrid').innerHTML='';
+  document.getElementById('screen-menu').classList.remove('active');
+  document.getElementById('screen-game').classList.add('active');
+  window.scrollTo(0,0);
 }
 
-const POOL = buildPool();
-
-function pick() { return POOL[Math.floor(Math.random() * POOL.length)]; }
-
-function stars(n) {
-  let h = '';
-  for (let i = 1; i <= 5; i++) h += `<div class="star${i <= n ? ' lit' : ''}"></div>`;
-  return h;
+function goBack(){
+  document.getElementById('screen-game').classList.remove('active');
+  document.getElementById('screen-menu').classList.add('active');
+  document.body.className='';
+  window.scrollTo(0,0);
 }
 
-function roll() {
-  if (rolling) return;
-  rolling = true;
-  const btn = document.getElementById('rollBtn');
-  const label = document.getElementById('btnLabel');
-  const card = document.getElementById('card');
-  const empty = document.getElementById('emptyState');
-  btn.disabled = true;
-  label.textContent = 'Rolling…';
-  if (card.classList.contains('reveal')) {
-    card.classList.remove('reveal');
-    card.classList.add('exit');
-    setTimeout(showCard, 280);
-  } else {
-    empty.classList.add('hidden');
-    setTimeout(showCard, 120);
-  }
+function getPool(){return mode==='character'?CP:mode==='world'?WP:TP;}
+function pick(){const p=getPool();return p[Math.floor(Math.random()*p.length)];}
+function starsHTML(n){let h='';for(let i=1;i<=5;i++)h+=`<div class="star${i<=n?' lit':''}"></div>`;return h;}
+
+function roll(){
+  if(rolling)return; rolling=true;
+  const btn=document.getElementById('rollBtn'), lbl=document.getElementById('btnLabel');
+  const card=document.getElementById('card'), empty=document.getElementById('emptyState');
+  btn.disabled=true; lbl.textContent='Rolling…';
+  if(card.classList.contains('reveal')){card.classList.remove('reveal');card.classList.add('exit');setTimeout(showCard,280);}
+  else{empty.classList.add('hidden');setTimeout(showCard,120);}
 }
 
-function showCard() {
-  const result = pick();
-  const card = document.getElementById('card');
+function showCard(){
+  const r=pick(), card=document.getElementById('card');
   card.classList.remove('exit');
-  document.getElementById('cIcon').textContent = result.icon;
-  document.getElementById('cType').textContent = result.type;
-  document.getElementById('cName').textContent = result.name;
-  document.getElementById('cDesc').textContent = result.desc;
-  document.getElementById('cStars').innerHTML = stars(result.stars);
-  const badge = document.getElementById('cRarity');
-  badge.textContent = result.rarity.charAt(0).toUpperCase() + result.rarity.slice(1);
-  badge.className = 'rarity-badge ' + result.rarity;
-  card.setAttribute('data-rarity', result.rarity);
-  if (result.rarity === 'legendary') {
-    const flash = document.getElementById('lflash');
-    flash.classList.remove('fire');
-    void flash.offsetWidth;
-    flash.classList.add('fire');
+  document.getElementById('cIcon').textContent=r.icon;
+  document.getElementById('cType').textContent=r.type;
+  document.getElementById('cName').textContent=r.name;
+  document.getElementById('cDesc').textContent=r.desc;
+  document.getElementById('cStars').innerHTML=starsHTML(r.stars);
+  const b=document.getElementById('cRarity');
+  b.textContent=r.rarity.charAt(0).toUpperCase()+r.rarity.slice(1);
+  b.className='rbadge '+r.rarity;
+  card.setAttribute('data-rarity',r.rarity);
+  if(r.rarity==='legendary'){
+    const f=document.getElementById('lflash');
+    f.style.background='radial-gradient(ellipse 60% 60% at 50% 50%,rgba(184,112,32,.18) 0%,transparent 70%)';
+    f.classList.remove('fire'); void f.offsetWidth; f.classList.add('fire');
   }
   card.classList.add('reveal');
-  rollCount++;
-  document.getElementById('rollCount').textContent = rollCount + (rollCount === 1 ? ' roll' : ' rolls');
-  addHistory(result);
-  document.getElementById('rollBtn').disabled = false;
-  document.getElementById('btnLabel').textContent = 'Roll Again';
-  rolling = false;
+  rc++; document.getElementById('rollCount').textContent=rc+(rc===1?' roll':' rolls');
+  addHistory(r);
+  document.getElementById('rollBtn').disabled=false;
+  document.getElementById('btnLabel').textContent='Roll Again';
+  rolling=false;
 }
 
-function addHistory(c) {
-  const section = document.getElementById('historySection');
-  const grid = document.getElementById('historyGrid');
-  if (!historyShown) { section.classList.add('visible'); historyShown = true; }
-  const chip = document.createElement('div');
-  chip.className = `history-chip ${c.rarity}`;
-  chip.innerHTML = `<span class="chip-icon">${c.icon}</span><span>${c.name}</span>`;
+function addHistory(c){
+  const sec=document.getElementById('historySection'), grid=document.getElementById('historyGrid');
+  if(!hShown){sec.classList.add('visible');hShown=true;}
+  const chip=document.createElement('div');
+  chip.className=`hchip ${c.rarity}`;
+  chip.innerHTML=`<span class="ci">${c.icon}</span><span>${c.name}</span>`;
   grid.prepend(chip);
-  while (grid.children.length > 20) grid.removeChild(grid.lastChild);
+  while(grid.children.length>24)grid.removeChild(grid.lastChild);
 }
 </script>
 </body>
