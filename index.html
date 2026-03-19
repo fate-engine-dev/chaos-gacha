@@ -10,13 +10,34 @@
 </head>
 <body>
 
-<!-- Celebration overlay — aura + blobs + no text -->
+<!-- Celebration overlay -->
 <div class="rarity-overlay" id="rarityOverlay">
   <div class="aura-blobs" id="auraBlobs"></div>
-  <div class="aura-ring" id="auraRing"></div>
+  <div class="aura-ring"  id="auraRing"></div>
 </div>
-<!-- Full-screen motes burst canvas -->
 <div class="motes-canvas" id="motesCanvas"></div>
+
+<!-- Card modal (deck full view) -->
+<div class="card-modal-bg" id="cardModalBg" onclick="closeModal(event)">
+  <div class="modal-card" id="modalCard">
+    <button class="modal-close" onclick="closeModalDirect()">✕</button>
+    <div class="modal-top">
+      <div class="modal-icon" id="mIcon"></div>
+      <div class="modal-meta">
+        <div class="modal-type" id="mType"></div>
+        <span class="rbadge" id="mRarity"></span>
+      </div>
+    </div>
+    <div class="modal-divider"></div>
+    <div class="modal-name" id="mName"></div>
+    <div class="modal-desc-wrap">
+      <div class="modal-desc" id="mDesc"></div>
+    </div>
+    <div class="modal-footer">
+      <div class="modal-stars" id="mStars"></div>
+    </div>
+  </div>
+</div>
 
 <!-- ══ MENU SCREEN ══ -->
 <div class="screen active" id="screen-menu">
@@ -52,7 +73,7 @@
         </div>
       </div>
     </div>
-    <div class="menu-footer">v0.7 · fate-engine</div>
+    <div class="menu-footer">v0.8 · fate-engine</div>
   </div>
 </div>
 
@@ -68,15 +89,16 @@
       <span class="game-badge" id="modeBadge">Character Mode</span>
     </div>
 
-    <!-- pull tiers + stage row -->
-    <div class="game-content">
+    <!-- Three-column layout: tiers | stage | draw -->
+    <div class="game-columns">
 
-      <!-- Pull tier sidebar -->
+      <!-- LEFT: pull tiers -->
       <div class="pull-tiers">
+        <div class="pull-label">Pull Tier</div>
         <div class="tier-btn bronze active" id="tier-bronze" onclick="selectTier('bronze')">
           <span class="tier-icon">🥉</span>
           <span class="tier-name">Bronze</span>
-          <span class="tier-odds">High common<br>Low rare</span>
+          <span class="tier-odds">40% common<br>15% rare<br>5% epic</span>
         </div>
         <div class="tier-btn silver" id="tier-silver" onclick="selectTier('silver')">
           <span class="tier-icon">🥈</span>
@@ -86,16 +108,16 @@
         <div class="tier-btn goldtier" id="tier-gold" onclick="selectTier('gold')">
           <span class="tier-icon">🥇</span>
           <span class="tier-name">Gold</span>
-          <span class="tier-odds">High rare<br>Epic+↑</span>
+          <span class="tier-odds">40% epic<br>15% legend</span>
         </div>
       </div>
 
-      <!-- Stage: drum + card -->
+      <!-- CENTRE: stage -->
       <div class="stage-wrap" id="stage">
 
         <div class="empty-state" id="emptyState">
           <div class="empty-orb">✦</div>
-          <span class="empty-text">awaiting your roll</span>
+          <span class="empty-text">awaiting your draw</span>
         </div>
 
         <div class="spin-drum-wrap" id="drumWrap">
@@ -104,8 +126,7 @@
           <div class="spin-drum" id="spinDrum"></div>
         </div>
 
-        <!-- card-wrap holds card + passive motes container -->
-        <div class="card-wrap" id="cardWrap" style="position:relative;">
+        <div class="card-wrap" id="cardWrap">
           <div class="card" id="card">
             <div class="card-top">
               <div class="card-icon-wrap" id="cIcon"></div>
@@ -123,16 +144,17 @@
               <div class="card-stars" id="cStars"></div>
             </div>
           </div>
-          <!-- passive motes layer (inside card-wrap, outside card) -->
           <div class="card-motes" id="cardMotes"></div>
         </div>
 
       </div>
-    </div>
 
-    <div class="roll-area" style="margin-top:2rem;">
-      <button class="roll-btn" id="rollBtn" onclick="roll()"><span id="btnLabel">Draw</span></button>
-      <span class="roll-count" id="rollCount">0 draws</span>
+      <!-- RIGHT: draw button -->
+      <div class="roll-column">
+        <button class="roll-btn" id="rollBtn" onclick="roll()"><span id="btnLabel">Draw</span></button>
+        <span class="roll-count" id="rollCount">0 draws</span>
+      </div>
+
     </div>
 
     <div class="history-section" id="historySection">
@@ -154,7 +176,7 @@
       <span class="deck-count" id="deckCount">0 cards</span>
     </div>
     <div class="deck-grid" id="deckGrid">
-      <div class="deck-empty">No cards yet — go roll some.</div>
+      <div class="deck-empty">No cards yet — go draw some.</div>
     </div>
   </div>
 </div>
@@ -163,34 +185,35 @@
 <script>
 /* ══════════════════════════════
    PULL TIER WEIGHTS
-   bronze: heavy common, almost no epic/legendary
-   silver: balanced
-   gold:   heavy rare/epic, legendary boosted
+   Bronze: 40 common / 30 uncommon / 15 rare / 5 epic / 0 legendary (10% nothing = extra common)
+   Silver: 40/30/18/9/3 balanced
+   Gold:   0 common / 5 uncommon / 40 rare / 40 epic / 15 legendary
 ══════════════════════════════ */
 const TIER_WEIGHTS = {
-  bronze:    { common:60, uncommon:28, rare:9,  epic:2,  legendary:1  },
-  silver:    { common:40, uncommon:30, rare:18, epic:9,  legendary:3  },
-  gold:      { common:15, uncommon:25, rare:32, epic:20, legendary:8  },
+  bronze: { common:40, uncommon:30, rare:15, epic:5,  legendary:0  },
+  silver: { common:40, uncommon:30, rare:18, epic:9,  legendary:3  },
+  gold:   { common:0,  uncommon:5,  rare:40, epic:40, legendary:15 },
 };
 
 let currentTier = 'bronze';
 
 function selectTier(t) {
   currentTier = t;
-  // update button states
   ['bronze','silver','gold'].forEach(id => {
     document.getElementById('tier-'+id).classList.toggle('active', id===t);
   });
-  // update body class for roll button colour
   const body = document.body;
-  body.classList.remove('tier-bronze','tier-silver','tier-gold');
-  body.classList.add('tier-'+t);
+  const modeClass = [...body.classList].find(c=>c.startsWith('mode-')) || '';
+  body.className = modeClass + ' tier-' + t;
 }
 
-/* ── POOL BUILDER ── */
+/* ── CARD POOL ── */
 function mkPool(cards, weights) {
   const p=[];
-  cards.forEach(c=>{ const w=weights[c.rarity]||1; for(let i=0;i<w;i++) p.push(c); });
+  cards.forEach(c=>{
+    const w=weights[c.rarity]||0;
+    for(let i=0;i<w;i++) p.push(c);
+  });
   return p;
 }
 
@@ -208,14 +231,14 @@ const RARITY_DATA=[
 /* ── NAVIGATION ── */
 function enterMode(m) {
   mode=m; rc=0; rolling=false; hShown=false;
-  document.body.className='mode-'+m+' tier-'+currentTier;
+  document.body.className='mode-'+m+' tier-bronze';
   const labels={character:'Character Mode',world:'World Mode',total:'Total Mode'};
   document.getElementById('modeBadge').textContent=labels[m];
   resetGame();
   document.getElementById('screen-menu').classList.remove('active');
   document.getElementById('screen-game').classList.add('active');
   window.scrollTo(0,0);
-  selectTier('bronze'); // default bronze on entry
+  selectTier('bronze');
 }
 
 function goBack() {
@@ -257,8 +280,8 @@ function getBaseCards() {
   return mode==='character'?CHARACTER_CARDS:mode==='world'?WORLD_CARDS:[...CHARACTER_CARDS,...WORLD_CARDS];
 }
 function pick() {
-  const w=TIER_WEIGHTS[currentTier];
-  const pool=mkPool(getBaseCards(),w);
+  const pool=mkPool(getBaseCards(), TIER_WEIGHTS[currentTier]);
+  if(!pool.length) return getBaseCards()[0]; // safety
   return pool[Math.floor(Math.random()*pool.length)];
 }
 function starsHTML(n){ let h=''; for(let i=1;i<=5;i++) h+=`<div class="star${i<=n?' lit':''}"></div>`; return h; }
@@ -271,7 +294,8 @@ const ITEM_W=140;
 function buildDrumSequence(targetRarity) {
   const w=TIER_WEIGHTS[currentTier];
   const pool=[];
-  RARITY_DATA.forEach(r=>{ for(let i=0;i<(w[r.rarity]||1);i++) pool.push(r); });
+  RARITY_DATA.forEach(r=>{ const wt=w[r.rarity]||0; for(let i=0;i<wt;i++) pool.push(r); });
+  if(!pool.length) RARITY_DATA.forEach(r=>{ for(let i=0;i<r.weight;i++) pool.push(r); });
   const seq=[];
   for(let i=0;i<60;i++) seq.push(pool[Math.floor(Math.random()*pool.length)]);
   const target=RARITY_DATA.find(r=>r.rarity===targetRarity);
@@ -308,11 +332,10 @@ function animateDrum(seq, cw, onDone) {
 
 /* ══════════════════════════════
    CELEBRATION OVERLAY
-   Aura + soft blobs — no straight lines
 ══════════════════════════════ */
 const BLOB_COLORS = {
-  epic:      ['rgba(122,74,184,0.55)','rgba(80,20,160,0.4)','rgba(160,100,220,0.35)','rgba(60,10,120,0.3)'],
-  legendary: ['rgba(200,169,110,0.6)','rgba(184,112,32,0.5)','rgba(232,201,138,0.45)','rgba(140,80,10,0.35)'],
+  epic:      ['rgba(122,74,184,.55)','rgba(80,20,160,.4)','rgba(160,100,220,.35)','rgba(60,10,120,.3)'],
+  legendary: ['rgba(200,169,110,.6)','rgba(184,112,32,.5)','rgba(232,201,138,.45)','rgba(140,80,10,.35)'],
 };
 
 function buildBlobs(rarity) {
@@ -320,26 +343,19 @@ function buildBlobs(rarity) {
   el.innerHTML='';
   const colors=BLOB_COLORS[rarity];
   if(!colors) return;
-  const count = rarity==='legendary'?12:8;
+  const count=rarity==='legendary'?14:9;
   for(let i=0;i<count;i++){
     const b=document.createElement('div');
     b.className='blob';
-    const size=60+Math.random()*120;
+    const size=70+Math.random()*140;
     const angle=Math.random()*360;
-    const dist=80+Math.random()*160;
+    const dist=60+Math.random()*140;
     const x=50+Math.cos(angle*Math.PI/180)*dist/4;
     const y=50+Math.sin(angle*Math.PI/180)*dist/4;
-    const dur=1000+Math.random()*1400;
-    const delay=Math.random()*600;
+    const dur=1000+Math.random()*1500;
+    const delay=Math.random()*700;
     const color=colors[Math.floor(Math.random()*colors.length)];
-    b.style.cssText=`
-      width:${size}px;height:${size}px;
-      left:calc(${x}% - ${size/2}px);
-      top:calc(${y}% - ${size/2}px);
-      background:${color};
-      animation-duration:${dur}ms;
-      animation-delay:${delay}ms;
-    `;
+    b.style.cssText=`width:${size}px;height:${size}px;left:calc(${x}% - ${size/2}px);top:calc(${y}% - ${size/2}px);background:${color};animation-duration:${dur}ms;animation-delay:${delay}ms;`;
     el.appendChild(b);
   }
 }
@@ -350,11 +366,11 @@ function fireRarityOverlay(rarity) {
   void overlay.offsetWidth;
   buildBlobs(rarity);
   overlay.classList.add(rarity,'fire');
-  setTimeout(()=>{ overlay.className='rarity-overlay'; },2600);
+  setTimeout(()=>{ overlay.className='rarity-overlay'; },2700);
 }
 
 /* ══════════════════════════════
-   MOTES — BURST (full screen, on reveal)
+   MOTES — BURST
 ══════════════════════════════ */
 const MOTE_COLORS = {
   epic:      ['#9a70e0','#c4a0f0','#7a4ab8','#b090d8'],
@@ -366,40 +382,28 @@ function fireMotesBurst(rarity) {
   canvas.innerHTML='';
   const colors=MOTE_COLORS[rarity];
   if(!colors) return;
-  const count=rarity==='legendary'?40:rarity==='epic'?20:0;
+  const count=rarity==='legendary'?44:rarity==='epic'?22:0;
   if(!count) return;
   for(let i=0;i<count;i++){
     const m=document.createElement('div');
     m.className='mote';
     const size=rarity==='legendary'?(3+Math.random()*7):(2+Math.random()*5);
-    const x=10+Math.random()*80;
-    const y=20+Math.random()*70;
+    const x=8+Math.random()*84; const y=20+Math.random()*70;
     const dyStart=-(20+Math.random()*60);
-    const dyEnd=-(80+Math.random()*200);
-    const dx=(-40+Math.random()*80);
-    const dur=800+Math.random()*1200;
-    const delay=Math.random()*1200;
+    const dyEnd=-(90+Math.random()*220);
+    const dx=(-45+Math.random()*90);
+    const dur=900+Math.random()*1300;
+    const delay=Math.random()*1300;
     const color=colors[Math.floor(Math.random()*colors.length)];
     const blur=rarity==='legendary'?`box-shadow:0 0 ${size*2}px ${color};`:'';
-    m.style.cssText=`
-      width:${size}px;height:${size}px;
-      left:${x}%;top:${y}%;
-      background:${color};
-      ${blur}
-      --dy-start:${dyStart}px;
-      --dy-end:${dyEnd}px;
-      --dx:${dx}px;
-      animation-duration:${dur}ms;
-      animation-delay:${delay}ms;
-    `;
+    m.style.cssText=`width:${size}px;height:${size}px;left:${x}%;top:${y}%;background:${color};${blur}--dy-start:${dyStart}px;--dy-end:${dyEnd}px;--dx:${dx}px;animation-duration:${dur}ms;animation-delay:${delay}ms;`;
     canvas.appendChild(m);
   }
-  // auto-clear after animation finishes
-  setTimeout(()=>{ canvas.innerHTML=''; }, 2800);
+  setTimeout(()=>{ canvas.innerHTML=''; },3000);
 }
 
 /* ══════════════════════════════
-   MOTES — PASSIVE (looping on card)
+   MOTES — PASSIVE
 ══════════════════════════════ */
 let passiveMoteInterval=null;
 
@@ -414,41 +418,22 @@ function startPassiveMotes(rarity) {
   const colors=MOTE_COLORS[rarity];
   const isLeg=rarity==='legendary';
   const container=document.getElementById('cardMotes');
-  const spawnRate=isLeg?300:600; // ms between spawns
-  const maxAtOnce=isLeg?6:3;
-
+  const rate=isLeg?280:550;
+  const max=isLeg?7:3;
   passiveMoteInterval=setInterval(()=>{
-    // remove dead ones
-    container.querySelectorAll('.cmote').forEach(m=>{
-      if(parseFloat(m.style.animationDelay||0)===0 &&
-         m.getBoundingClientRect().width===0) m.remove();
-    });
-    if(container.children.length>=maxAtOnce) return;
-
+    if(container.children.length>=max) return;
     const m=document.createElement('div');
     m.className='cmote';
     const size=isLeg?(2+Math.random()*5):(1.5+Math.random()*3.5);
-    const x=5+Math.random()*90;
-    const y=60+Math.random()*35; // rise from lower half of card
-    const dy=-(40+Math.random()*80);
-    const dx=(-15+Math.random()*30);
-    const dur=1200+Math.random()*1600;
+    const x=5+Math.random()*90; const y=55+Math.random()*40;
+    const dy=-(45+Math.random()*90); const dx=(-18+Math.random()*36);
+    const dur=1300+Math.random()*1700;
     const color=colors[Math.floor(Math.random()*colors.length)];
     const blur=isLeg?`box-shadow:0 0 ${size*2}px ${color};`:'';
-    m.style.cssText=`
-      width:${size}px;height:${size}px;
-      left:${x}%;top:${y}%;
-      background:${color};
-      ${blur}
-      --cm-dy:${dy}px;
-      --cm-dx:${dx}px;
-      animation-duration:${dur}ms;
-      animation-iteration-count:1;
-    `;
+    m.style.cssText=`width:${size}px;height:${size}px;left:${x}%;top:${y}%;background:${color};${blur}--cm-dy:${dy}px;--cm-dx:${dx}px;animation-duration:${dur}ms;animation-iteration-count:1;`;
     container.appendChild(m);
-    // remove after done
     setTimeout(()=>m.remove(), dur+100);
-  }, spawnRate);
+  }, rate);
 }
 
 /* ══════════════════════════════
@@ -499,8 +484,7 @@ function showCard(result) {
   document.getElementById('rollBtn').disabled=false;
   document.getElementById('btnLabel').textContent='Draw Again';
   rolling=false;
-  // start passive motes for epic/legendary
-  setTimeout(()=>{ startPassiveMotes(result.rarity); }, 700);
+  setTimeout(()=>{ startPassiveMotes(result.rarity); },700);
 }
 
 /* ── HISTORY ── */
@@ -525,7 +509,7 @@ function renderDeck() {
   document.getElementById('deckCount').textContent=deckCards.length+(deckCards.length===1?' card':' cards');
   if(!deckCards.length){ grid.innerHTML='<div class="deck-empty">No cards yet — go draw some.</div>'; return; }
   grid.innerHTML='';
-  deckCards.forEach(c=>{
+  deckCards.forEach((c,i)=>{
     const div=document.createElement('div');
     div.className=`deck-card ${c.rarity}`;
     div.innerHTML=`
@@ -537,9 +521,41 @@ function renderDeck() {
       <div class="dc-name">${c.name}</div>
       <div class="dc-desc">${c.desc}</div>
     `;
+    div.addEventListener('click',()=>openModal(i));
     grid.appendChild(div);
   });
 }
+
+/* ══════════════════════════════
+   CARD MODAL
+══════════════════════════════ */
+function openModal(index) {
+  const c=deckCards[index];
+  const mc=document.getElementById('modalCard');
+  document.getElementById('mIcon').textContent=c.icon;
+  document.getElementById('mType').textContent=c.type;
+  document.getElementById('mName').textContent=c.name;
+  document.getElementById('mDesc').textContent=c.desc;
+  document.getElementById('mStars').innerHTML=starsHTML(c.stars);
+  const rb=document.getElementById('mRarity');
+  rb.textContent=c.rarity.charAt(0).toUpperCase()+c.rarity.slice(1);
+  rb.className='rbadge '+c.rarity;
+  mc.setAttribute('data-rarity',c.rarity);
+  document.getElementById('cardModalBg').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+
+function closeModal(e) {
+  if(e.target===document.getElementById('cardModalBg')) closeModalDirect();
+}
+
+function closeModalDirect() {
+  document.getElementById('cardModalBg').classList.remove('open');
+  document.body.style.overflow='';
+}
+
+// Close modal on Escape
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeModalDirect(); });
 </script>
 </body>
 </html>
