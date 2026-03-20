@@ -10,14 +10,13 @@
 </head>
 <body>
 
-<!-- Celebration overlay -->
 <div class="rarity-overlay" id="rarityOverlay">
   <div class="aura-blobs" id="auraBlobs"></div>
   <div class="aura-ring"  id="auraRing"></div>
 </div>
 <div class="motes-canvas" id="motesCanvas"></div>
 
-<!-- Card modal (deck full view) -->
+<!-- Card modal -->
 <div class="card-modal-bg" id="cardModalBg" onclick="closeModal(event)">
   <div class="modal-card" id="modalCard">
     <button class="modal-close" onclick="closeModalDirect()">✕</button>
@@ -30,16 +29,12 @@
     </div>
     <div class="modal-divider"></div>
     <div class="modal-name" id="mName"></div>
-    <div class="modal-desc-wrap">
-      <div class="modal-desc" id="mDesc"></div>
-    </div>
-    <div class="modal-footer">
-      <div class="modal-stars" id="mStars"></div>
-    </div>
+    <div class="modal-desc-wrap"><div class="modal-desc" id="mDesc"></div></div>
+    <div class="modal-footer"><div class="modal-stars" id="mStars"></div></div>
   </div>
 </div>
 
-<!-- ══ MENU SCREEN ══ -->
+<!-- ══ MENU ══ -->
 <div class="screen active" id="screen-menu">
   <div class="menu-inner">
     <div class="menu-eyebrow">Choose your path</div>
@@ -49,50 +44,45 @@
       <div class="mode-card char" onclick="enterMode('character')">
         <span class="mode-icon">⚔️</span>
         <div class="mode-name">Character</div>
-        <div class="mode-desc">Forge yourself from the chaos. Roll abilities, traits, items, familiars and titles.</div>
-        <div class="mode-tags">
-          <span class="mode-tag">Traits</span><span class="mode-tag">Powers</span>
-          <span class="mode-tag">Items</span><span class="mode-tag">Familiars</span><span class="mode-tag">Titles</span>
-        </div>
+        <div class="mode-desc">Forge yourself from the chaos.</div>
+        <div class="mode-tags"><span class="mode-tag">Traits</span><span class="mode-tag">Powers</span><span class="mode-tag">Items</span><span class="mode-tag">Familiars</span></div>
       </div>
       <div class="mode-card world" onclick="enterMode('world')">
         <span class="mode-icon">🌍</span>
         <div class="mode-name">World</div>
-        <div class="mode-desc">Reshape reality itself. Roll biomes, factions, materials and species into existence.</div>
-        <div class="mode-tags">
-          <span class="mode-tag">Biomes</span><span class="mode-tag">Factions</span>
-          <span class="mode-tag">Materials</span><span class="mode-tag">Species</span>
-        </div>
+        <div class="mode-desc">Reshape reality itself.</div>
+        <div class="mode-tags"><span class="mode-tag">Biomes</span><span class="mode-tag">Factions</span><span class="mode-tag">Species</span></div>
       </div>
       <div class="mode-card total" onclick="enterMode('total')">
         <span class="mode-icon">✦</span>
         <div class="mode-name">Total</div>
-        <div class="mode-desc">Character and world intertwined. Every roll could be anything. Pure chaos.</div>
-        <div class="mode-tags">
-          <span class="mode-tag">All pools</span><span class="mode-tag">Combined</span>
-        </div>
+        <div class="mode-desc">Everything combined. Pure chaos.</div>
+        <div class="mode-tags"><span class="mode-tag">All pools</span></div>
+      </div>
+      <div class="mode-card create" onclick="openCreate('screen-menu')">
+        <span class="mode-icon">✍️</span>
+        <div class="mode-name">Create</div>
+        <div class="mode-desc">Design your own card and add it to the game.</div>
+        <div class="mode-tags"><span class="mode-tag">Custom card</span></div>
       </div>
     </div>
-    <div class="menu-footer">v0.8 · fate-engine</div>
+    <div class="menu-footer">v0.9 · fate-engine</div>
   </div>
 </div>
 
 <!-- ══ GAME SCREEN ══ -->
 <div class="screen" id="screen-game">
   <div class="game-inner">
-
     <div class="game-topbar">
       <div class="topbar-left">
         <button class="back-btn" onclick="goBack()">← Back</button>
         <button class="deck-btn" id="deckBtn" onclick="openDeck()">My Deck</button>
+        <button class="create-btn-top" onclick="openCreate('screen-game')">+ Create</button>
       </div>
       <span class="game-badge" id="modeBadge">Character Mode</span>
     </div>
 
-    <!-- Three-column layout: tiers | stage | draw -->
     <div class="game-columns">
-
-      <!-- LEFT: pull tiers -->
       <div class="pull-tiers">
         <div class="pull-label">Pull Tier</div>
         <div class="tier-btn bronze active" id="tier-bronze" onclick="selectTier('bronze')">
@@ -112,20 +102,16 @@
         </div>
       </div>
 
-      <!-- CENTRE: stage -->
       <div class="stage-wrap" id="stage">
-
         <div class="empty-state" id="emptyState">
           <div class="empty-orb">✦</div>
           <span class="empty-text">awaiting your draw</span>
         </div>
-
         <div class="spin-drum-wrap" id="drumWrap">
           <div class="drum-line-left"></div>
           <div class="drum-line-right"></div>
           <div class="spin-drum" id="spinDrum"></div>
         </div>
-
         <div class="card-wrap" id="cardWrap">
           <div class="card" id="card">
             <div class="card-top">
@@ -137,31 +123,23 @@
             </div>
             <div class="card-divider"></div>
             <div class="card-name" id="cName"></div>
-            <div class="card-desc-wrap">
-              <div class="card-desc" id="cDesc"></div>
-            </div>
-            <div class="card-footer">
-              <div class="card-stars" id="cStars"></div>
-            </div>
+            <div class="card-desc-wrap"><div class="card-desc" id="cDesc"></div></div>
+            <div class="card-footer"><div class="card-stars" id="cStars"></div></div>
           </div>
           <div class="card-motes" id="cardMotes"></div>
         </div>
-
       </div>
 
-      <!-- RIGHT: draw button -->
       <div class="roll-column">
         <button class="roll-btn" id="rollBtn" onclick="roll()"><span id="btnLabel">Draw</span></button>
         <span class="roll-count" id="rollCount">0 draws</span>
       </div>
-
     </div>
 
     <div class="history-section" id="historySection">
       <div class="history-label">Roll history</div>
       <div class="history-grid" id="historyGrid"></div>
     </div>
-
   </div>
 </div>
 
@@ -181,88 +159,171 @@
   </div>
 </div>
 
+<!-- ══ CREATE SCREEN ══ -->
+<div class="screen" id="screen-create">
+  <div class="create-inner">
+    <div class="create-topbar">
+      <div class="topbar-left">
+        <button class="back-btn" id="createBackBtn">← Back</button>
+        <div class="create-title">Create a Card</div>
+      </div>
+    </div>
+
+    <div class="create-layout">
+
+      <!-- Form -->
+      <div class="create-form">
+
+        <div class="form-group">
+          <label class="form-label">Card Name</label>
+          <input class="form-input" id="f-name" type="text" placeholder="e.g. Shadow Tongue" maxlength="60" oninput="updatePreview()">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Type</label>
+          <select class="form-select" id="f-type" onchange="updatePreview()">
+            <option value="Ability">Ability</option>
+            <option value="Trait">Trait</option>
+            <option value="Item">Item</option>
+            <option value="Familiar">Familiar</option>
+            <option value="Title">Title</option>
+            <option value="Biome">Biome</option>
+            <option value="Faction">Faction</option>
+            <option value="Material">Material</option>
+            <option value="Species">Species</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Rarity</label>
+          <select class="form-select" id="f-rarity" onchange="updatePreview()">
+            <option value="common">Common</option>
+            <option value="uncommon">Uncommon</option>
+            <option value="rare" selected>Rare</option>
+            <option value="epic">Epic</option>
+            <option value="legendary">Legendary</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Icon — pick one or type your own</label>
+          <div class="emoji-row">
+            <div class="emoji-opt" onclick="selectEmoji(this,'⚡')">⚡</div>
+            <div class="emoji-opt" onclick="selectEmoji(this,'🔥')">🔥</div>
+            <div class="emoji-opt" onclick="selectEmoji(this,'🌊')">🌊</div>
+            <div class="emoji-opt" onclick="selectEmoji(this,'🌑')">🌑</div>
+            <div class="emoji-opt" onclick="selectEmoji(this,'🗡️')">🗡️</div>
+            <div class="emoji-opt" onclick="selectEmoji(this,'👁️')">👁️</div>
+            <div class="emoji-opt" onclick="selectEmoji(this,'🐉')">🐉</div>
+            <div class="emoji-opt" onclick="selectEmoji(this,'✦')">✦</div>
+            <input class="form-input emoji-custom" id="f-icon" type="text" placeholder="or type any emoji" maxlength="4" oninput="clearEmojiSel();updatePreview()">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Description</label>
+          <textarea class="form-textarea" id="f-desc" placeholder="Write your card description here…" maxlength="600" oninput="updatePreview()"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Your name (optional)</label>
+          <input class="form-input" id="f-author" type="text" placeholder="Anonymous" maxlength="40">
+        </div>
+
+        <button class="create-submit" id="createSubmit" onclick="submitCard()">
+          <span id="submitLabel">Submit Card</span>
+        </button>
+        <div class="submit-status" id="submitStatus"></div>
+
+      </div>
+
+      <!-- Live preview -->
+      <div>
+        <div class="preview-label">Live Preview</div>
+        <div class="preview-card" id="previewCard" data-rarity="rare">
+          <div class="preview-top">
+            <div class="preview-icon" id="prev-icon">✦</div>
+            <div class="preview-meta">
+              <div class="preview-type" id="prev-type">Ability</div>
+              <span class="rbadge rare" id="prev-rarity">Rare</span>
+            </div>
+          </div>
+          <div class="preview-divider"></div>
+          <div class="preview-name" id="prev-name">Your Card Name</div>
+          <div class="preview-desc" id="prev-desc">Your description will appear here as you type…</div>
+          <div class="preview-stars" id="prev-stars"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
 <script src="cards.js"></script>
 <script>
-/* ══════════════════════════════
-   PULL TIER WEIGHTS
-   Bronze: 40 common / 30 uncommon / 15 rare / 5 epic / 0 legendary (10% nothing = extra common)
-   Silver: 40/30/18/9/3 balanced
-   Gold:   0 common / 5 uncommon / 40 rare / 40 epic / 15 legendary
-══════════════════════════════ */
+const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbyKjG9Ix9FRWhcFi_oQOP69rwgn77-1oS2ZihYtzZdN48vawf5neFgrq4Tc2ht_heW5/exec';
+const RARITY_STARS = { common:1, uncommon:2, rare:3, epic:4, legendary:5 };
 const TIER_WEIGHTS = {
-  bronze: { common:40, uncommon:30, rare:15, epic:5,  legendary:0  },
-  silver: { common:40, uncommon:30, rare:18, epic:9,  legendary:3  },
+  bronze: { common:40, uncommon:30, rare:15, epic:5,  legendary:0 },
+  silver: { common:40, uncommon:30, rare:18, epic:9,  legendary:3 },
   gold:   { common:0,  uncommon:5,  rare:40, epic:40, legendary:15 },
 };
-
-let currentTier = 'bronze';
-
-function selectTier(t) {
-  currentTier = t;
-  ['bronze','silver','gold'].forEach(id => {
-    document.getElementById('tier-'+id).classList.toggle('active', id===t);
-  });
-  const body = document.body;
-  const modeClass = [...body.classList].find(c=>c.startsWith('mode-')) || '';
-  body.className = modeClass + ' tier-' + t;
-}
-
-/* ── CARD POOL ── */
-function mkPool(cards, weights) {
-  const p=[];
-  cards.forEach(c=>{
-    const w=weights[c.rarity]||0;
-    for(let i=0;i<w;i++) p.push(c);
-  });
-  return p;
-}
-
-let mode=null, rc=0, rolling=false, hShown=false;
-let deckCards=[];
-
 const RARITY_DATA=[
-  {rarity:'common',    icon:'◦', label:'Common',    weight:40},
-  {rarity:'uncommon',  icon:'◈', label:'Uncommon',  weight:30},
-  {rarity:'rare',      icon:'◆', label:'Rare',      weight:18},
-  {rarity:'epic',      icon:'❋', label:'Epic',      weight:9 },
-  {rarity:'legendary', icon:'✦', label:'Legendary', weight:3 },
+  {rarity:'common',    icon:'◦',label:'Common',    weight:40},
+  {rarity:'uncommon',  icon:'◈',label:'Uncommon',  weight:30},
+  {rarity:'rare',      icon:'◆',label:'Rare',      weight:18},
+  {rarity:'epic',      icon:'❋',label:'Epic',      weight:9},
+  {rarity:'legendary', icon:'✦',label:'Legendary', weight:3},
 ];
+const BLOB_COLORS={
+  epic:['rgba(122,74,184,.55)','rgba(80,20,160,.4)','rgba(160,100,220,.35)','rgba(60,10,120,.3)'],
+  legendary:['rgba(200,169,110,.6)','rgba(184,112,32,.5)','rgba(232,201,138,.45)','rgba(140,80,10,.35)'],
+};
+const MOTE_COLORS={
+  epic:['#9a70e0','#c4a0f0','#7a4ab8','#b090d8'],
+  legendary:['#e8c98a','#c8a96e','#f0d8a0','#b87020','#ffd890'],
+};
 
-/* ── NAVIGATION ── */
-function enterMode(m) {
+let currentTier='bronze', mode=null, rc=0, rolling=false, hShown=false;
+let deckCards=[], userCards=[], previousScreen='screen-menu';
+let passiveMoteInterval=null, selectedEmoji='✦';
+const ITEM_W=140;
+
+/* ── LOCALSTORAGE ── */
+function loadUserCards(){ try{ const s=localStorage.getItem('fe_user_cards'); if(s) userCards=JSON.parse(s); }catch(e){ userCards=[]; } }
+function saveUserCards(){ try{ localStorage.setItem('fe_user_cards',JSON.stringify(userCards)); }catch(e){} }
+loadUserCards();
+
+/* ── HELPERS ── */
+function mkPool(cards,weights){ const p=[]; cards.forEach(c=>{ const w=weights[c.rarity]||0; for(let i=0;i<w;i++) p.push(c); }); return p; }
+function getBaseCards(){ const b=mode==='character'?CHARACTER_CARDS:mode==='world'?WORLD_CARDS:[...CHARACTER_CARDS,...WORLD_CARDS]; return [...b,...userCards]; }
+function pick(){ const pool=mkPool(getBaseCards(),TIER_WEIGHTS[currentTier]); if(!pool.length) return getBaseCards()[0]; return pool[Math.floor(Math.random()*pool.length)]; }
+function starsHTML(n){ let h=''; for(let i=1;i<=5;i++) h+=`<div class="star${i<=n?' lit':''}"></div>`; return h; }
+function showScreen(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); document.getElementById(id).classList.add('active'); window.scrollTo(0,0); }
+
+/* ── TIER ── */
+function selectTier(t){
+  currentTier=t;
+  ['bronze','silver','gold'].forEach(id=>{ document.getElementById('tier-'+id).classList.toggle('active',id===t); });
+  const mc=[...document.body.classList].find(c=>c.startsWith('mode-'))||'';
+  document.body.className=mc+' tier-'+t;
+}
+
+/* ── NAV ── */
+function enterMode(m){
   mode=m; rc=0; rolling=false; hShown=false;
   document.body.className='mode-'+m+' tier-bronze';
-  const labels={character:'Character Mode',world:'World Mode',total:'Total Mode'};
-  document.getElementById('modeBadge').textContent=labels[m];
-  resetGame();
-  document.getElementById('screen-menu').classList.remove('active');
-  document.getElementById('screen-game').classList.add('active');
-  window.scrollTo(0,0);
-  selectTier('bronze');
+  document.getElementById('modeBadge').textContent={character:'Character Mode',world:'World Mode',total:'Total Mode'}[m];
+  resetGame(); showScreen('screen-game'); selectTier('bronze');
 }
+function goBack(){ stopPassiveMotes(); document.body.className=''; showScreen('screen-menu'); }
+function openDeck(){ renderDeck(); showScreen('screen-deck'); }
+function closeDeck(){ showScreen('screen-game'); }
+function openCreate(from){ previousScreen=from||'screen-menu'; document.getElementById('createBackBtn').onclick=closeCreate; resetCreateForm(); showScreen('screen-create'); }
+function closeCreate(){ showScreen(previousScreen); }
 
-function goBack() {
-  stopPassiveMotes();
-  document.getElementById('screen-game').classList.remove('active');
-  document.getElementById('screen-menu').classList.add('active');
-  document.body.className='';
-  window.scrollTo(0,0);
-}
-
-function openDeck() {
-  renderDeck();
-  document.getElementById('screen-game').classList.remove('active');
-  document.getElementById('screen-deck').classList.add('active');
-  window.scrollTo(0,0);
-}
-
-function closeDeck() {
-  document.getElementById('screen-deck').classList.remove('active');
-  document.getElementById('screen-game').classList.add('active');
-  window.scrollTo(0,0);
-}
-
-function resetGame() {
+function resetGame(){
   const card=document.getElementById('card');
   card.classList.remove('reveal'); card.style.display='none'; card.style.opacity='0';
   document.getElementById('emptyState').classList.remove('hidden');
@@ -275,287 +336,148 @@ function resetGame() {
   stopPassiveMotes();
 }
 
-/* ── PICK ── */
-function getBaseCards() {
-  return mode==='character'?CHARACTER_CARDS:mode==='world'?WORLD_CARDS:[...CHARACTER_CARDS,...WORLD_CARDS];
-}
-function pick() {
-  const pool=mkPool(getBaseCards(), TIER_WEIGHTS[currentTier]);
-  if(!pool.length) return getBaseCards()[0]; // safety
-  return pool[Math.floor(Math.random()*pool.length)];
-}
-function starsHTML(n){ let h=''; for(let i=1;i<=5;i++) h+=`<div class="star${i<=n?' lit':''}"></div>`; return h; }
-
-/* ══════════════════════════════
-   HORIZONTAL SPIN DRUM
-══════════════════════════════ */
-const ITEM_W=140;
-
-function buildDrumSequence(targetRarity) {
-  const w=TIER_WEIGHTS[currentTier];
-  const pool=[];
+/* ── DRUM ── */
+function buildDrumSequence(tr){
+  const w=TIER_WEIGHTS[currentTier]; const pool=[];
   RARITY_DATA.forEach(r=>{ const wt=w[r.rarity]||0; for(let i=0;i<wt;i++) pool.push(r); });
   if(!pool.length) RARITY_DATA.forEach(r=>{ for(let i=0;i<r.weight;i++) pool.push(r); });
-  const seq=[];
-  for(let i=0;i<60;i++) seq.push(pool[Math.floor(Math.random()*pool.length)]);
-  const target=RARITY_DATA.find(r=>r.rarity===targetRarity);
-  seq.push(target,target,target);
-  return seq;
+  const seq=[]; for(let i=0;i<60;i++) seq.push(pool[Math.floor(Math.random()*pool.length)]);
+  const target=RARITY_DATA.find(r=>r.rarity===tr); seq.push(target,target,target); return seq;
 }
-
-function buildDrumDOM(seq) {
+function buildDrumDOM(seq){ const drum=document.getElementById('spinDrum'); drum.innerHTML=''; seq.forEach(r=>{ const d=document.createElement('div'); d.className=`drum-item ${r.rarity}`; d.innerHTML=`<span class="d-icon">${r.icon}</span><span class="d-label">${r.label}</span>`; drum.appendChild(d); }); }
+function animateDrum(seq,cw,onDone){
   const drum=document.getElementById('spinDrum');
-  drum.innerHTML='';
-  seq.forEach(r=>{
-    const d=document.createElement('div');
-    d.className=`drum-item ${r.rarity}`;
-    d.innerHTML=`<span class="d-icon">${r.icon}</span><span class="d-label">${r.label}</span>`;
-    drum.appendChild(d);
-  });
-}
-
-function animateDrum(seq, cw, onDone) {
-  const drum=document.getElementById('spinDrum');
-  const ti=seq.length-2;
-  const cx=cw/2-ITEM_W/2;
-  const fx=-(ti*ITEM_W)+cx;
-  const sx=-(5*ITEM_W)+cx;
-  const DUR=7000, t0=performance.now();
-  function ease(t){ return 1-Math.pow(1-t,5); }
+  const fx=-(( seq.length-2)*ITEM_W)+cw/2-ITEM_W/2, sx=-(5*ITEM_W)+cw/2-ITEM_W/2;
+  const DUR=7000,t0=performance.now(); function ease(t){ return 1-Math.pow(1-t,5); }
   drum.style.transform=`translateX(${sx}px)`;
-  (function frame(now){
-    const t=Math.min((now-t0)/DUR,1);
-    drum.style.transform=`translateX(${sx+ease(t)*(fx-sx)}px)`;
-    t<1?requestAnimationFrame(frame):(drum.style.transform=`translateX(${fx}px)`,onDone());
-  })(performance.now());
+  (function frame(now){ const t=Math.min((now-t0)/DUR,1); drum.style.transform=`translateX(${sx+ease(t)*(fx-sx)}px)`; t<1?requestAnimationFrame(frame):(drum.style.transform=`translateX(${fx}px)`,onDone()); })(performance.now());
 }
 
-/* ══════════════════════════════
-   CELEBRATION OVERLAY
-══════════════════════════════ */
-const BLOB_COLORS = {
-  epic:      ['rgba(122,74,184,.55)','rgba(80,20,160,.4)','rgba(160,100,220,.35)','rgba(60,10,120,.3)'],
-  legendary: ['rgba(200,169,110,.6)','rgba(184,112,32,.5)','rgba(232,201,138,.45)','rgba(140,80,10,.35)'],
-};
+/* ── CELEBRATION ── */
+function buildBlobs(rarity){ const el=document.getElementById('auraBlobs'); el.innerHTML=''; const colors=BLOB_COLORS[rarity]; if(!colors) return; const count=rarity==='legendary'?14:9; for(let i=0;i<count;i++){ const b=document.createElement('div'); b.className='blob'; const size=70+Math.random()*140,angle=Math.random()*360,dist=60+Math.random()*140; const x=50+Math.cos(angle*Math.PI/180)*dist/4,y=50+Math.sin(angle*Math.PI/180)*dist/4; const dur=1000+Math.random()*1500,delay=Math.random()*700; const color=colors[Math.floor(Math.random()*colors.length)]; b.style.cssText=`width:${size}px;height:${size}px;left:calc(${x}% - ${size/2}px);top:calc(${y}% - ${size/2}px);background:${color};animation-duration:${dur}ms;animation-delay:${delay}ms;`; el.appendChild(b); } }
+function fireRarityOverlay(rarity){ const o=document.getElementById('rarityOverlay'); o.className='rarity-overlay'; void o.offsetWidth; buildBlobs(rarity); o.classList.add(rarity,'fire'); setTimeout(()=>{ o.className='rarity-overlay'; },2700); }
+function fireMotesBurst(rarity){ const canvas=document.getElementById('motesCanvas'); canvas.innerHTML=''; const colors=MOTE_COLORS[rarity]; if(!colors) return; const count=rarity==='legendary'?44:rarity==='epic'?22:0; if(!count) return; for(let i=0;i<count;i++){ const m=document.createElement('div'); m.className='mote'; const size=rarity==='legendary'?(3+Math.random()*7):(2+Math.random()*5); const x=8+Math.random()*84,y=20+Math.random()*70; const dyStart=-(20+Math.random()*60),dyEnd=-(90+Math.random()*220),dx=(-45+Math.random()*90); const dur=900+Math.random()*1300,delay=Math.random()*1300; const color=colors[Math.floor(Math.random()*colors.length)]; const blur=rarity==='legendary'?`box-shadow:0 0 ${size*2}px ${color};`:''; m.style.cssText=`width:${size}px;height:${size}px;left:${x}%;top:${y}%;background:${color};${blur}--dy-start:${dyStart}px;--dy-end:${dyEnd}px;--dx:${dx}px;animation-duration:${dur}ms;animation-delay:${delay}ms;`; canvas.appendChild(m); } setTimeout(()=>{ canvas.innerHTML=''; },3000); }
+function stopPassiveMotes(){ if(passiveMoteInterval){ clearInterval(passiveMoteInterval); passiveMoteInterval=null; } document.getElementById('cardMotes').innerHTML=''; }
+function startPassiveMotes(rarity){ stopPassiveMotes(); if(rarity!=='epic'&&rarity!=='legendary') return; const colors=MOTE_COLORS[rarity],isLeg=rarity==='legendary',container=document.getElementById('cardMotes'),rate=isLeg?280:550,max=isLeg?7:3; passiveMoteInterval=setInterval(()=>{ if(container.children.length>=max) return; const m=document.createElement('div'); m.className='cmote'; const size=isLeg?(2+Math.random()*5):(1.5+Math.random()*3.5),x=5+Math.random()*90,y=55+Math.random()*40,dy=-(45+Math.random()*90),dx=(-18+Math.random()*36),dur=1300+Math.random()*1700; const color=colors[Math.floor(Math.random()*colors.length)],blur=isLeg?`box-shadow:0 0 ${size*2}px ${color};`:''; m.style.cssText=`width:${size}px;height:${size}px;left:${x}%;top:${y}%;background:${color};${blur}--cm-dy:${dy}px;--cm-dx:${dx}px;animation-duration:${dur}ms;animation-iteration-count:1;`; container.appendChild(m); setTimeout(()=>m.remove(),dur+100); },rate); }
 
-function buildBlobs(rarity) {
-  const el=document.getElementById('auraBlobs');
-  el.innerHTML='';
-  const colors=BLOB_COLORS[rarity];
-  if(!colors) return;
-  const count=rarity==='legendary'?14:9;
-  for(let i=0;i<count;i++){
-    const b=document.createElement('div');
-    b.className='blob';
-    const size=70+Math.random()*140;
-    const angle=Math.random()*360;
-    const dist=60+Math.random()*140;
-    const x=50+Math.cos(angle*Math.PI/180)*dist/4;
-    const y=50+Math.sin(angle*Math.PI/180)*dist/4;
-    const dur=1000+Math.random()*1500;
-    const delay=Math.random()*700;
-    const color=colors[Math.floor(Math.random()*colors.length)];
-    b.style.cssText=`width:${size}px;height:${size}px;left:calc(${x}% - ${size/2}px);top:calc(${y}% - ${size/2}px);background:${color};animation-duration:${dur}ms;animation-delay:${delay}ms;`;
-    el.appendChild(b);
-  }
-}
-
-function fireRarityOverlay(rarity) {
-  const overlay=document.getElementById('rarityOverlay');
-  overlay.className='rarity-overlay';
-  void overlay.offsetWidth;
-  buildBlobs(rarity);
-  overlay.classList.add(rarity,'fire');
-  setTimeout(()=>{ overlay.className='rarity-overlay'; },2700);
-}
-
-/* ══════════════════════════════
-   MOTES — BURST
-══════════════════════════════ */
-const MOTE_COLORS = {
-  epic:      ['#9a70e0','#c4a0f0','#7a4ab8','#b090d8'],
-  legendary: ['#e8c98a','#c8a96e','#f0d8a0','#b87020','#ffd890'],
-};
-
-function fireMotesBurst(rarity) {
-  const canvas=document.getElementById('motesCanvas');
-  canvas.innerHTML='';
-  const colors=MOTE_COLORS[rarity];
-  if(!colors) return;
-  const count=rarity==='legendary'?44:rarity==='epic'?22:0;
-  if(!count) return;
-  for(let i=0;i<count;i++){
-    const m=document.createElement('div');
-    m.className='mote';
-    const size=rarity==='legendary'?(3+Math.random()*7):(2+Math.random()*5);
-    const x=8+Math.random()*84; const y=20+Math.random()*70;
-    const dyStart=-(20+Math.random()*60);
-    const dyEnd=-(90+Math.random()*220);
-    const dx=(-45+Math.random()*90);
-    const dur=900+Math.random()*1300;
-    const delay=Math.random()*1300;
-    const color=colors[Math.floor(Math.random()*colors.length)];
-    const blur=rarity==='legendary'?`box-shadow:0 0 ${size*2}px ${color};`:'';
-    m.style.cssText=`width:${size}px;height:${size}px;left:${x}%;top:${y}%;background:${color};${blur}--dy-start:${dyStart}px;--dy-end:${dyEnd}px;--dx:${dx}px;animation-duration:${dur}ms;animation-delay:${delay}ms;`;
-    canvas.appendChild(m);
-  }
-  setTimeout(()=>{ canvas.innerHTML=''; },3000);
-}
-
-/* ══════════════════════════════
-   MOTES — PASSIVE
-══════════════════════════════ */
-let passiveMoteInterval=null;
-
-function stopPassiveMotes() {
-  if(passiveMoteInterval){ clearInterval(passiveMoteInterval); passiveMoteInterval=null; }
-  document.getElementById('cardMotes').innerHTML='';
-}
-
-function startPassiveMotes(rarity) {
-  stopPassiveMotes();
-  if(rarity!=='epic' && rarity!=='legendary') return;
-  const colors=MOTE_COLORS[rarity];
-  const isLeg=rarity==='legendary';
-  const container=document.getElementById('cardMotes');
-  const rate=isLeg?280:550;
-  const max=isLeg?7:3;
-  passiveMoteInterval=setInterval(()=>{
-    if(container.children.length>=max) return;
-    const m=document.createElement('div');
-    m.className='cmote';
-    const size=isLeg?(2+Math.random()*5):(1.5+Math.random()*3.5);
-    const x=5+Math.random()*90; const y=55+Math.random()*40;
-    const dy=-(45+Math.random()*90); const dx=(-18+Math.random()*36);
-    const dur=1300+Math.random()*1700;
-    const color=colors[Math.floor(Math.random()*colors.length)];
-    const blur=isLeg?`box-shadow:0 0 ${size*2}px ${color};`:'';
-    m.style.cssText=`width:${size}px;height:${size}px;left:${x}%;top:${y}%;background:${color};${blur}--cm-dy:${dy}px;--cm-dx:${dx}px;animation-duration:${dur}ms;animation-iteration-count:1;`;
-    container.appendChild(m);
-    setTimeout(()=>m.remove(), dur+100);
-  }, rate);
-}
-
-/* ══════════════════════════════
-   MAIN ROLL FLOW
-══════════════════════════════ */
-function roll() {
-  if(rolling) return;
-  rolling=true;
-  const btn=document.getElementById('rollBtn'), lbl=document.getElementById('btnLabel');
-  const card=document.getElementById('card'), empty=document.getElementById('emptyState');
-  const drumWrap=document.getElementById('drumWrap');
+/* ── ROLL ── */
+function roll(){
+  if(rolling) return; rolling=true;
+  const btn=document.getElementById('rollBtn'),lbl=document.getElementById('btnLabel'),card=document.getElementById('card'),empty=document.getElementById('emptyState'),drumWrap=document.getElementById('drumWrap');
   btn.disabled=true; lbl.textContent='Drawing…';
-  const result=pick();
-  stopPassiveMotes();
+  const result=pick(); stopPassiveMotes();
   card.classList.remove('reveal'); card.style.display='none'; card.style.opacity='0';
-  empty.classList.add('hidden');
-  drumWrap.classList.add('active');
-  const cw=drumWrap.offsetWidth;
-  const seq=buildDrumSequence(result.rarity);
-  buildDrumDOM(seq);
-  animateDrum(seq,cw,()=>{
-    setTimeout(()=>{
-      drumWrap.classList.remove('active');
-      fireRarityOverlay(result.rarity);
-      fireMotesBurst(result.rarity);
-      setTimeout(()=>{ showCard(result); },380);
-    },400);
-  });
+  empty.classList.add('hidden'); drumWrap.classList.add('active');
+  const cw=drumWrap.offsetWidth; const seq=buildDrumSequence(result.rarity); buildDrumDOM(seq);
+  animateDrum(seq,cw,()=>{ setTimeout(()=>{ drumWrap.classList.remove('active'); fireRarityOverlay(result.rarity); fireMotesBurst(result.rarity); setTimeout(()=>{ showCard(result); },380); },400); });
 }
 
-function showCard(result) {
+function showCard(result){
   const card=document.getElementById('card');
-  document.getElementById('cIcon').textContent=result.icon;
-  document.getElementById('cType').textContent=result.type;
-  document.getElementById('cName').textContent=result.name;
-  document.getElementById('cDesc').textContent=result.desc;
+  document.getElementById('cIcon').textContent=result.icon; document.getElementById('cType').textContent=result.type;
+  document.getElementById('cName').textContent=result.name; document.getElementById('cDesc').textContent=result.desc;
   document.getElementById('cStars').innerHTML=starsHTML(result.stars);
-  const b=document.getElementById('cRarity');
-  b.textContent=result.rarity.charAt(0).toUpperCase()+result.rarity.slice(1);
-  b.className='rbadge '+result.rarity;
-  card.setAttribute('data-rarity',result.rarity);
-  card.style.display='flex'; card.style.opacity='0';
+  const b=document.getElementById('cRarity'); b.textContent=result.rarity.charAt(0).toUpperCase()+result.rarity.slice(1); b.className='rbadge '+result.rarity;
+  card.setAttribute('data-rarity',result.rarity); card.style.display='flex'; card.style.opacity='0';
   requestAnimationFrame(()=>{ card.classList.add('reveal'); });
-  rc++;
-  document.getElementById('rollCount').textContent=rc+(rc===1?' draw':' draws');
-  addToHistory(result);
-  addToDeck(result);
-  document.getElementById('rollBtn').disabled=false;
-  document.getElementById('btnLabel').textContent='Draw Again';
-  rolling=false;
+  rc++; document.getElementById('rollCount').textContent=rc+(rc===1?' draw':' draws');
+  addToHistory(result); addToDeck(result);
+  document.getElementById('rollBtn').disabled=false; document.getElementById('btnLabel').textContent='Draw Again'; rolling=false;
   setTimeout(()=>{ startPassiveMotes(result.rarity); },700);
 }
 
-/* ── HISTORY ── */
-function addToHistory(c) {
-  const sec=document.getElementById('historySection'), grid=document.getElementById('historyGrid');
-  if(!hShown){ sec.classList.add('visible'); hShown=true; }
-  const chip=document.createElement('div');
-  chip.className=`hchip ${c.rarity}`;
-  chip.innerHTML=`<span class="ci">${c.icon}</span><span>${c.name}</span>`;
-  grid.prepend(chip);
-  while(grid.children.length>24) grid.removeChild(grid.lastChild);
-}
+function addToHistory(c){ const sec=document.getElementById('historySection'),grid=document.getElementById('historyGrid'); if(!hShown){ sec.classList.add('visible'); hShown=true; } const chip=document.createElement('div'); chip.className=`hchip ${c.rarity}`; chip.innerHTML=`<span class="ci">${c.icon}</span><span>${c.name}</span>`; grid.prepend(chip); while(grid.children.length>24) grid.removeChild(grid.lastChild); }
+function addToDeck(c){ deckCards.unshift(c); document.getElementById('deckBtn').textContent=`My Deck (${deckCards.length})`; }
 
 /* ── DECK ── */
-function addToDeck(c) {
-  deckCards.unshift(c);
-  document.getElementById('deckBtn').textContent=`My Deck (${deckCards.length})`;
-}
-
-function renderDeck() {
+function renderDeck(){
   const grid=document.getElementById('deckGrid');
   document.getElementById('deckCount').textContent=deckCards.length+(deckCards.length===1?' card':' cards');
   if(!deckCards.length){ grid.innerHTML='<div class="deck-empty">No cards yet — go draw some.</div>'; return; }
   grid.innerHTML='';
   deckCards.forEach((c,i)=>{
-    const div=document.createElement('div');
-    div.className=`deck-card ${c.rarity}`;
-    div.innerHTML=`
-      <div class="dc-header">
-        <span class="dc-icon">${c.icon}</span>
-        <span class="dc-badge ${c.rarity}">${c.rarity.charAt(0).toUpperCase()+c.rarity.slice(1)}</span>
-      </div>
-      <div class="dc-type">${c.type}</div>
-      <div class="dc-name">${c.name}</div>
-      <div class="dc-desc">${c.desc}</div>
-    `;
-    div.addEventListener('click',()=>openModal(i));
-    grid.appendChild(div);
+    const div=document.createElement('div'); div.className=`deck-card ${c.rarity}`;
+    div.innerHTML=`<div class="dc-header"><span class="dc-icon">${c.icon}</span><span class="dc-badge ${c.rarity}">${c.rarity.charAt(0).toUpperCase()+c.rarity.slice(1)}</span></div><div class="dc-type">${c.type}</div><div class="dc-name">${c.name}</div><div class="dc-desc">${c.desc}</div>`;
+    div.addEventListener('click',()=>openModal(i)); grid.appendChild(div);
   });
 }
 
-/* ══════════════════════════════
-   CARD MODAL
-══════════════════════════════ */
-function openModal(index) {
-  const c=deckCards[index];
-  const mc=document.getElementById('modalCard');
-  document.getElementById('mIcon').textContent=c.icon;
-  document.getElementById('mType').textContent=c.type;
-  document.getElementById('mName').textContent=c.name;
-  document.getElementById('mDesc').textContent=c.desc;
-  document.getElementById('mStars').innerHTML=starsHTML(c.stars);
-  const rb=document.getElementById('mRarity');
-  rb.textContent=c.rarity.charAt(0).toUpperCase()+c.rarity.slice(1);
-  rb.className='rbadge '+c.rarity;
-  mc.setAttribute('data-rarity',c.rarity);
-  document.getElementById('cardModalBg').classList.add('open');
-  document.body.style.overflow='hidden';
-}
-
-function closeModal(e) {
-  if(e.target===document.getElementById('cardModalBg')) closeModalDirect();
-}
-
-function closeModalDirect() {
-  document.getElementById('cardModalBg').classList.remove('open');
-  document.body.style.overflow='';
-}
-
-// Close modal on Escape
+/* ── MODAL ── */
+function openModal(i){ const c=deckCards[i],mc=document.getElementById('modalCard'); document.getElementById('mIcon').textContent=c.icon; document.getElementById('mType').textContent=c.type; document.getElementById('mName').textContent=c.name; document.getElementById('mDesc').textContent=c.desc; document.getElementById('mStars').innerHTML=starsHTML(c.stars); const rb=document.getElementById('mRarity'); rb.textContent=c.rarity.charAt(0).toUpperCase()+c.rarity.slice(1); rb.className='rbadge '+c.rarity; mc.setAttribute('data-rarity',c.rarity); document.getElementById('cardModalBg').classList.add('open'); document.body.style.overflow='hidden'; }
+function closeModal(e){ if(e.target===document.getElementById('cardModalBg')) closeModalDirect(); }
+function closeModalDirect(){ document.getElementById('cardModalBg').classList.remove('open'); document.body.style.overflow=''; }
 document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeModalDirect(); });
+
+/* ══════════════════════════════
+   CREATE
+══════════════════════════════ */
+function selectEmoji(el,emoji){ document.querySelectorAll('.emoji-opt').forEach(e=>e.classList.remove('selected')); el.classList.add('selected'); selectedEmoji=emoji; document.getElementById('f-icon').value=''; updatePreview(); }
+function clearEmojiSel(){ document.querySelectorAll('.emoji-opt').forEach(e=>e.classList.remove('selected')); selectedEmoji=document.getElementById('f-icon').value||'✦'; }
+function getIcon(){ return document.getElementById('f-icon').value.trim()||selectedEmoji||'✦'; }
+
+function resetCreateForm(){
+  ['f-name','f-desc','f-author'].forEach(id=>{ document.getElementById(id).value=''; });
+  document.getElementById('f-type').value='Ability';
+  document.getElementById('f-rarity').value='rare';
+  document.getElementById('f-icon').value='';
+  document.getElementById('submitStatus').textContent='';
+  document.getElementById('submitStatus').className='submit-status';
+  document.getElementById('submitLabel').textContent='Submit Card';
+  document.getElementById('createSubmit').disabled=false;
+  document.querySelectorAll('.emoji-opt').forEach(e=>e.classList.remove('selected'));
+  selectedEmoji='✦'; updatePreview();
+}
+
+function updatePreview(){
+  const name=document.getElementById('f-name').value.trim()||'Your Card Name';
+  const type=document.getElementById('f-type').value;
+  const rarity=document.getElementById('f-rarity').value;
+  const desc=document.getElementById('f-desc').value.trim()||'Your description will appear here as you type…';
+  const icon=getIcon(); const stars=RARITY_STARS[rarity]||3;
+  const card=document.getElementById('previewCard'); card.setAttribute('data-rarity',rarity);
+  document.getElementById('prev-icon').textContent=icon;
+  document.getElementById('prev-type').textContent=type;
+  document.getElementById('prev-name').textContent=name;
+  document.getElementById('prev-desc').textContent=desc;
+  const rb=document.getElementById('prev-rarity'); rb.textContent=rarity.charAt(0).toUpperCase()+rarity.slice(1); rb.className='rbadge '+rarity;
+  const starsEl=document.getElementById('prev-stars'); starsEl.innerHTML='';
+  for(let i=1;i<=5;i++){ const s=document.createElement('div'); s.className='star'+(i<=stars?' lit':''); starsEl.appendChild(s); }
+}
+
+async function submitCard(){
+  const name=document.getElementById('f-name').value.trim();
+  const type=document.getElementById('f-type').value;
+  const rarity=document.getElementById('f-rarity').value;
+  const icon=getIcon();
+  const desc=document.getElementById('f-desc').value.trim();
+  const author=document.getElementById('f-author').value.trim()||'Anonymous';
+  if(!name){ setStatus('Please enter a card name.','err'); return; }
+  if(!desc){  setStatus('Please write a description.','err'); return; }
+  const stars=RARITY_STARS[rarity]||3;
+  // Add to local pool immediately
+  userCards.push({ type, icon, name, rarity, stars, desc });
+  saveUserCards();
+  // UI feedback
+  document.getElementById('createSubmit').disabled=true;
+  document.getElementById('submitLabel').textContent='Sending…';
+  setStatus('','');
+  try{
+    await fetch(SHEETS_URL,{ method:'POST', mode:'no-cors', headers:{'Content-Type':'application/json'}, body:JSON.stringify({name,type,rarity,stars,icon,description:desc,createdBy:author}) });
+    setStatus('Card created and sent! It is now in the game pool.','ok');
+  }catch(e){
+    setStatus('Card saved locally. (Sheet sync may have failed.)','ok');
+  }
+  document.getElementById('submitLabel').textContent='Submit Another';
+  document.getElementById('createSubmit').disabled=false;
+  document.getElementById('f-name').value='';
+  document.getElementById('f-desc').value='';
+  document.getElementById('f-author').value='';
+  updatePreview();
+}
+
+function setStatus(msg,cls){ const el=document.getElementById('submitStatus'); el.textContent=msg; el.className='submit-status'+(cls?' '+cls:''); }
+
+updatePreview();
 </script>
 </body>
 </html>
