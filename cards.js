@@ -1,8 +1,7 @@
 // ═══════════════════════════════════════════════
 //  FATE ENGINE — CARD DATA  (cards.js)
 //
-//  This is the ONLY file you need to touch to
-//  add, remove or change cards.
+//  Edit this file to add, remove or change cards.
 //
 //  RARITY VALUES: common / uncommon / rare / epic / legendary
 //  STARS:         1=common  2=uncommon  3=rare  4=epic  5=legendary
@@ -99,6 +98,22 @@ const CHARACTER_CARDS = [
   { type:"Title", icon:"🧩", name:"Wildcard", rarity:"rare", stars:3,
     desc:"You don't fit any prophecy. You don't fit any category. This makes you the most dangerous thing in the room." },
 
+  // — RACES —
+  { type:"Race", icon:"🌑", name:"Umbral", rarity:"uncommon", stars:2,
+    desc:"Born in places where light never reaches. Your eyes reflect nothing. You navigate by feeling the shape of darkness, which has more texture than most people imagine." },
+  { type:"Race", icon:"🌿", name:"Verdathi", rarity:"common", stars:1,
+    desc:"A people who grow slowly and live long. Their skin hardens with age. Their elders are indistinguishable from bark. They find this dignified." },
+  { type:"Race", icon:"🔥", name:"Cindreborn", rarity:"rare", stars:3,
+    desc:"Descended from those who survived a fire that should have killed everything. They run warm. They don't scar. They are immune to smoke and have complicated feelings about flames." },
+  { type:"Race", icon:"🌊", name:"Tidewrought", rarity:"uncommon", stars:2,
+    desc:"Coastal people shaped by generations of deep-water diving. Their lungs hold more than they should. They hear tides in their sleep. Landlocked cities make them anxious in ways they can't explain." },
+  { type:"Race", icon:"⚡", name:"Stormkind", rarity:"rare", stars:3,
+    desc:"A people born during storms, marked by static in their hair and a faint hum others can feel but not hear. They attract lightning. Not metaphorically — literally. They have learned to use this." },
+  { type:"Race", icon:"👁️", name:"The Eyeless", rarity:"epic", stars:4,
+    desc:"A race that lost their eyes generations ago and developed something else in their place. They perceive intent directly. They cannot be lied to. Conversations with them are deeply uncomfortable." },
+  { type:"Race", icon:"✨", name:"Stardrift", rarity:"legendary", stars:5,
+    desc:"No one knows where they came from. They arrived over centuries, always alone, always already speaking the local language. They age in reverse and have no word for home. Some believe they are not from this world. They neither confirm nor deny this." },
+
 ];
 
 
@@ -165,5 +180,33 @@ const WORLD_CARDS = [
     desc:"A species that dies once in youth and resurrects changed. The second life is longer. The memories of death remain. They rule most of the oldest empires." },
   { type:"Species", icon:"🔮", name:"Glassborn", rarity:"rare", stars:3,
     desc:"Creatures with translucent skin through which their organs are clearly visible. They are considered deeply beautiful in some cultures, deeply unsettling in others. Both are right." },
+
+  // — PAST —
+  { type:"Past", icon:"🏛️", name:"The First Empire", rarity:"rare", stars:3,
+    desc:"Ten thousand years ago a single civilisation ruled every continent. No one knows what ended it. Their roads still exist. Their locks still work. Their language is still spoken in dreams by people who have never learned it." },
+  { type:"Past", icon:"🌑", name:"The Long Night", rarity:"uncommon", stars:2,
+    desc:"For seventeen years the sun did not rise. No one remembers why. People who were born during it are slightly different — calmer in darkness, unnerved by noon. They rarely speak of it." },
+  { type:"Past", icon:"⚔️", name:"The War of Correct Names", rarity:"uncommon", stars:2,
+    desc:"A century-long conflict fought entirely over language. What things were called determined what they were allowed to be. It ended when both sides ran out of words they agreed on." },
+  { type:"Past", icon:"💀", name:"The Culling Plague", rarity:"rare", stars:3,
+    desc:"A disease that killed selectively — only the cruel, only the kind, only the old, accounts vary. The survivors built very different societies depending on which version killed theirs." },
+  { type:"Past", icon:"✨", name:"The Age of Answered Prayers", rarity:"epic", stars:4,
+    desc:"For one hundred years, every sincere prayer was answered. Exactly as asked. With no interpretation. The theological consequences took centuries to untangle and some argue they still haven't been." },
+  { type:"Past", icon:"🌀", name:"The Unmaking", rarity:"legendary", stars:5,
+    desc:"Something tried to end the world. It almost succeeded. The records of what it was were deliberately destroyed by the people who stopped it. The method they used to stop it was also destroyed. There are those who spend their lives trying to find out why." },
+
+  // — EVENTS —
+  { type:"Event", icon:"🌋", name:"The Awakening of Vel Morroth", rarity:"rare", stars:3,
+    desc:"A dormant volcano at the centre of the known world has begun to breathe. Not erupt — breathe. Volcanologists measure the rhythm. Priests argue about what it means. Everyone agrees it means something." },
+  { type:"Event", icon:"🌊", name:"The Retreating Sea", rarity:"uncommon", stars:2,
+    desc:"The ocean on the eastern coast has pulled back forty miles in the past decade. The exposed seabed is rich, strange, and full of structures that should not exist. People are moving in. The sea is still retreating." },
+  { type:"Event", icon:"👑", name:"The Succession of Three", rarity:"uncommon", stars:2,
+    desc:"A throne is contested by three claimants, each with equal legal claim, each with a faction, each convinced the other two are wrong. The kingdom functions normally. The tension does not." },
+  { type:"Event", icon:"💀", name:"The Quiet Deaths", rarity:"rare", stars:3,
+    desc:"People are dying in their sleep across six cities, in sequence, one city at a time, moving south. No cause has been found. Each victim reported the same dream the night before. No one has written the dream down." },
+  { type:"Event", icon:"🔮", name:"The Opening of the Sealed Archive", rarity:"epic", stars:4,
+    desc:"A library that has been locked for three hundred years has opened on its own. The books inside are written in a language no one recognises, in handwriting that matches no known scholar, dated fifty years from now." },
+  { type:"Event", icon:"✨", name:"The Return of the Stardrift", rarity:"legendary", stars:5,
+    desc:"After two centuries of absence, members of the Stardrift race have begun appearing again, always alone, always in places of significance, never explaining where they have been. They seem younger than when they left. They ask a lot of questions about what has changed." },
 
 ];
