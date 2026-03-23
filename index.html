@@ -63,9 +63,7 @@
         <span class="mode-icon">✦</span>
         <div class="mode-name">Total</div>
         <div class="mode-desc">Everything combined. Pure chaos.</div>
-        <div class="mode-tags">
-          <span class="mode-tag">All pools</span>
-        </div>
+        <div class="mode-tags"><span class="mode-tag">All pools</span></div>
       </div>
       <div class="mode-card create" onclick="openCreate()" style="grid-column:1/-1;max-width:280px;margin:0 auto;">
         <span class="mode-icon">✍️</span>
@@ -73,14 +71,13 @@
         <div class="mode-desc">Design your own. No code required.</div>
       </div>
     </div>
-    <div class="menu-footer">v2.0 · fate-engine</div>
+    <div class="menu-footer">v2.2 · fate-engine</div>
   </div>
 </div>
 
 <!-- ══ GAME ══ -->
 <div class="screen" id="screen-game" style="min-height:100vh;height:100vh;max-height:100vh;">
 
-  <!-- sticky top bar -->
   <div class="topbar">
     <div class="topbar-left">
       <button class="back-btn" onclick="goBack()">← Back</button>
@@ -90,7 +87,6 @@
     <span class="game-badge" id="modeBadge">Character Mode</span>
   </div>
 
-  <!-- three-column body -->
   <div class="game-body" style="flex:1;overflow:hidden;">
 
     <!-- LEFT: pull tiers -->
@@ -125,19 +121,17 @@
 
     <!-- CENTRE: stage -->
     <div class="stage-col" id="stage">
-
       <div class="empty-state" id="emptyState">
         <div class="empty-orb">✦</div>
         <span class="empty-text">awaiting your draw</span>
       </div>
 
-      <!-- drum -->
-      <div class="spin-drum-wrap" id="drumWrap">
+      <!-- Drum — hidden by default via inline style, shown by JS -->
+      <div class="spin-drum-wrap" id="drumWrap" style="display:none;">
         <div class="drum-selector"></div>
         <div class="spin-drum" id="spinDrum"></div>
       </div>
 
-      <!-- card -->
       <div class="card-wrap" id="cardWrap">
         <div class="card" id="card">
           <div class="card-top">
@@ -159,14 +153,21 @@
         <div class="history-label">Roll history</div>
         <div class="history-grid" id="historyGrid"></div>
       </div>
-
     </div>
 
-    <!-- RIGHT: draw button -->
+    <!-- RIGHT: draw + rates -->
     <div class="draw-sidebar">
+
+      <!-- Rates popup (appears above button) -->
+      <div class="rates-popup" id="ratesPopup">
+        <div class="rates-popup-title" id="ratesTitle">Bronze Rates</div>
+        <div id="ratesRows"></div>
+      </div>
+
       <button class="roll-btn" id="rollBtn" onclick="roll()"><span id="btnLabel">Draw</span></button>
       <span class="roll-count" id="rollCount">0 draws</span>
       <span class="tier-active-label" id="tierActiveLabel">Bronze Pull</span>
+      <button class="rates-btn" onclick="toggleRates()">See Rates</button>
     </div>
 
   </div>
@@ -190,7 +191,7 @@
 <div class="screen" id="screen-create">
   <div class="topbar">
     <div class="topbar-left">
-      <button class="back-btn" id="createBackBtn" onclick="closeCreate()">← Back</button>
+      <button class="back-btn" onclick="closeCreate()">← Back</button>
       <span style="font-family:'Cinzel',serif;font-size:.95rem;font-weight:600;letter-spacing:.08em;color:#a870e0;">Create a Card</span>
     </div>
   </div>
@@ -204,31 +205,21 @@
         <div class="form-group">
           <label class="form-label">Type</label>
           <select class="form-select" id="f-type" onchange="updatePreview()">
-            <option value="Ability">Ability</option>
-            <option value="Trait">Trait</option>
-            <option value="Race">Race</option>
-            <option value="Item">Item</option>
-            <option value="Familiar">Familiar</option>
-            <option value="Title">Title</option>
-            <option value="Biome">Biome</option>
-            <option value="Faction">Faction</option>
-            <option value="Material">Material</option>
-            <option value="Species">Species</option>
-            <option value="Past">Past</option>
-            <option value="Event">Event</option>
+            <option value="Ability">Ability</option><option value="Trait">Trait</option>
+            <option value="Race">Race</option><option value="Item">Item</option>
+            <option value="Familiar">Familiar</option><option value="Title">Title</option>
+            <option value="Biome">Biome</option><option value="Faction">Faction</option>
+            <option value="Material">Material</option><option value="Species">Species</option>
+            <option value="Past">Past</option><option value="Event">Event</option>
           </select>
         </div>
         <div class="form-group">
           <label class="form-label">Rarity</label>
           <select class="form-select" id="f-rarity" onchange="updatePreview()">
-            <option value="trash">Trash</option>
-            <option value="common">Common</option>
-            <option value="uncommon">Uncommon</option>
-            <option value="rare" selected>Rare</option>
-            <option value="super_rare">Super Rare</option>
-            <option value="epic">Epic</option>
-            <option value="legendary">Legendary</option>
-            <option value="divine">Divine</option>
+            <option value="trash">Trash</option><option value="common">Common</option>
+            <option value="uncommon">Uncommon</option><option value="rare" selected>Rare</option>
+            <option value="super_rare">Super Rare</option><option value="epic">Epic</option>
+            <option value="legendary">Legendary</option><option value="divine">Divine</option>
             <option value="supreme">Supreme</option>
           </select>
         </div>
@@ -244,9 +235,7 @@
           <label class="form-label">Your name or alias <span class="form-hint">(optional)</span></label>
           <input class="form-input" id="f-creator" type="text" placeholder="Anonymous" maxlength="40"/>
         </div>
-        <button class="create-submit" id="createSubmit" onclick="submitCard()">
-          <span id="submitLabel">Submit Card</span>
-        </button>
+        <button class="create-submit" id="createSubmit" onclick="submitCard()"><span id="submitLabel">Submit Card</span></button>
         <div class="create-status" id="createStatus"></div>
       </div>
       <div>
@@ -276,45 +265,45 @@
 ══════════════════════════════ */
 const SHEETS_URL='https://script.google.com/macros/s/AKfycbyKjG9Ix9FRWhcFi_oQOP69rwgn77-1oS2ZihYtzZdN48vawf5neFgrq4Tc2ht_heW5/exec';
 
-const RARITY_STARS={ trash:0,common:1,uncommon:2,rare:3,super_rare:3,epic:4,legendary:5,divine:5,supreme:5 };
-const RARITY_LABEL={ trash:'Trash',common:'Common',uncommon:'Uncommon',rare:'Rare',super_rare:'Super Rare',epic:'Epic',legendary:'Legendary',divine:'Divine',supreme:'Supreme' };
+const RARITY_STARS={trash:0,common:1,uncommon:2,rare:3,super_rare:3,epic:4,legendary:5,divine:5,supreme:5};
+const RARITY_LABEL={trash:'Trash',common:'Common',uncommon:'Uncommon',rare:'Rare',super_rare:'Super Rare',epic:'Epic',legendary:'Legendary',divine:'Divine',supreme:'Supreme'};
+const RARITY_ORDER=['trash','common','uncommon','rare','super_rare','epic','legendary','divine','supreme'];
 
-/* ── PULL TIER WEIGHTS (must sum to 100 per tier) ──
-   Designed so each tier feels noticeably better:
-   Bronze:  trash-heavy, almost no epic+
-   Silver:  common/uncommon dominant, rare possible, tiny epic
-   Gold:    rare/super_rare dominant, legendary opens up
-   Plat:    epic/legendary dominant, divine possible
-   Diamond: legendary+ dominant, supreme possible
-*/
 const TIER_WEIGHTS={
-  bronze:  { trash:30, common:35, uncommon:18, rare:8,  super_rare:6,  epic:2,  legendary:1,  divine:0,  supreme:0  },
-  silver:  { trash:8,  common:28, uncommon:28, rare:18, super_rare:10, epic:5,  legendary:2,  divine:1,  supreme:0  },
-  gold:    { trash:0,  common:5,  uncommon:12, rare:28, super_rare:22, epic:18, legendary:8,  divine:5,  supreme:2  },
-  plat:    { trash:0,  common:0,  uncommon:2,  rare:8,  super_rare:18, epic:30, legendary:25, divine:12, supreme:5  },
-  diamond: { trash:0,  common:0,  uncommon:0,  rare:2,  super_rare:8,  epic:20, legendary:35, divine:30, supreme:5  },
+  bronze:  {trash:30,common:35,uncommon:18,rare:8, super_rare:6, epic:2, legendary:1, divine:0,supreme:0},
+  silver:  {trash:8, common:28,uncommon:28,rare:18,super_rare:10,epic:5, legendary:2, divine:1,supreme:0},
+  gold:    {trash:0, common:5, uncommon:12,rare:28,super_rare:22,epic:18,legendary:8, divine:5,supreme:2},
+  plat:    {trash:0, common:0, uncommon:2, rare:8, super_rare:18,epic:30,legendary:25,divine:12,supreme:5},
+  diamond: {trash:0, common:0, uncommon:0, rare:2, super_rare:8, epic:20,legendary:35,divine:30,supreme:5},
 };
 
-/* ── DRUM DATA (all 9 rarities shown in wheel) ── */
+const TIER_NAMES={bronze:'Bronze Pull',silver:'Silver Pull',gold:'Gold Pull',plat:'Platinum Pull',diamond:'Diamond Pull'};
+const TIER_DISPLAY={bronze:'Bronze',silver:'Silver',gold:'Gold',plat:'Platinum',diamond:'Diamond'};
+
+/* bar colors for rates popup */
+const RARITY_COLORS={
+  trash:'#4a4238',common:'#7a7870',uncommon:'#4a8a5a',rare:'#3a6ea8',
+  super_rare:'#2a8a8a',epic:'#7a4ab8',legendary:'#b87020',divine:'#c8a0e8',supreme:'#e8d0a0'
+};
+
 const RARITY_DATA=[
-  {rarity:'trash',     icon:'💩', label:'Trash'     },
-  {rarity:'common',    icon:'◦',  label:'Common'    },
-  {rarity:'uncommon',  icon:'◈',  label:'Uncommon'  },
-  {rarity:'rare',      icon:'◆',  label:'Rare'      },
-  {rarity:'super_rare',icon:'◈◈', label:'Super Rare'},
-  {rarity:'epic',      icon:'❋',  label:'Epic'      },
-  {rarity:'legendary', icon:'✦',  label:'Legendary' },
-  {rarity:'divine',    icon:'✧',  label:'Divine'    },
-  {rarity:'supreme',   icon:'∞',  label:'Supreme'   },
+  {rarity:'trash',     icon:'💩',label:'Trash'    },
+  {rarity:'common',    icon:'◦', label:'Common'   },
+  {rarity:'uncommon',  icon:'◈', label:'Uncommon' },
+  {rarity:'rare',      icon:'◆', label:'Rare'     },
+  {rarity:'super_rare',icon:'◈◈',label:'Super Rare'},
+  {rarity:'epic',      icon:'❋', label:'Epic'     },
+  {rarity:'legendary', icon:'✦', label:'Legendary'},
+  {rarity:'divine',    icon:'✧', label:'Divine'   },
+  {rarity:'supreme',   icon:'∞', label:'Supreme'  },
 ];
 
-/* ── CELEBRATION DATA ── */
 const BLOB_COLORS={
   super_rare:['rgba(42,138,138,.5)','rgba(20,100,100,.4)','rgba(80,180,180,.35)'],
   epic:      ['rgba(122,74,184,.55)','rgba(80,20,160,.4)','rgba(160,100,220,.35)'],
   legendary: ['rgba(200,169,110,.6)','rgba(184,112,32,.5)','rgba(232,201,138,.45)'],
   divine:    ['rgba(200,160,232,.6)','rgba(140,80,200,.45)','rgba(220,180,255,.4)'],
-  supreme:   ['rgba(232,208,160,.65)','rgba(200,180,100,.5)','rgba(255,220,80,.4)','rgba(220,190,120,.45)'],
+  supreme:   ['rgba(232,208,160,.65)','rgba(200,180,100,.5)','rgba(255,220,80,.4)'],
 };
 const MOTE_COLORS={
   super_rare:['#2a8a8a','#4ababa','#80d8d8','#60c0c0'],
@@ -323,15 +312,15 @@ const MOTE_COLORS={
   divine:    ['#ddb8ff','#c890e8','#f0d0ff','#b080d0','#e0b8f8'],
   supreme:   ['#f0e0b0','#e8d080','#fff0c0','#d0b860','#ffe890','#ffffff'],
 };
-const MOTE_COUNTS={ super_rare:12,epic:22,legendary:40,divine:55,supreme:75 };
+const MOTE_COUNTS={super_rare:12,epic:22,legendary:40,divine:55,supreme:75};
 
-/* ── STATE ── */
 let currentTier='bronze',mode=null,rc=0,rolling=false,hShown=false;
 let deckCards=[],userCards=[];
 let selectedEmoji='⚡',createFromGame=false;
+let ratesOpen=false;
 
-function saveUserCards(){ try{ localStorage.setItem('fe_user_cards',JSON.stringify(userCards)); }catch(e){} }
-function loadUserCards(){ try{ const d=localStorage.getItem('fe_user_cards'); if(d) userCards=JSON.parse(d); }catch(e){ userCards=[]; } }
+function saveUserCards(){try{localStorage.setItem('fe_user_cards',JSON.stringify(userCards));}catch(e){}}
+function loadUserCards(){try{const d=localStorage.getItem('fe_user_cards');if(d)userCards=JSON.parse(d);}catch(e){userCards=[];}}
 
 /* ══════════════════════════════
    NAVIGATION
@@ -342,24 +331,21 @@ function show(id){
   });
   window.scrollTo(0,0);
 }
-
 function enterMode(m){
-  mode=m; rc=0; rolling=false; hShown=false;
+  mode=m;rc=0;rolling=false;hShown=false;
   document.body.className='mode-'+m+' tier-bronze';
   document.getElementById('modeBadge').textContent={character:'Character Mode',world:'World Mode',total:'Total Mode'}[m];
-  resetGame(); show('screen-game'); selectTier('bronze');
+  resetGame();show('screen-game');selectTier('bronze');
 }
-
-function goBack(){ stopPassiveMotes(); show('screen-menu'); document.body.className=''; }
-function openDeck(){ renderDeck(); show('screen-deck'); }
-function closeDeck(){ show('screen-game'); }
+function goBack(){stopPassiveMotes();show('screen-menu');document.body.className='';}
+function openDeck(){renderDeck();show('screen-deck');}
+function closeDeck(){show('screen-game');}
 function openCreate(){
   createFromGame=document.getElementById('screen-game').classList.contains('active');
-  buildEmojiRow('Ability'); clearCreateForm(); show('screen-create');
+  buildEmojiRow('Ability');clearCreateForm();show('screen-create');
 }
-function closeCreate(){ show(createFromGame?'screen-game':'screen-menu'); }
+function closeCreate(){show(createFromGame?'screen-game':'screen-menu');}
 
-const TIER_NAMES={bronze:'Bronze Pull',silver:'Silver Pull',gold:'Gold Pull',plat:'Platinum Pull',diamond:'Diamond Pull'};
 function selectTier(t){
   currentTier=t;
   ['bronze','silver','gold','plat','diamond'].forEach(id=>{
@@ -369,14 +355,52 @@ function selectTier(t){
   document.body.className=mc+' tier-'+t;
   const lbl=document.getElementById('tierActiveLabel');
   if(lbl) lbl.textContent=TIER_NAMES[t]||t;
+  /* update rates popup if open */
+  if(ratesOpen) buildRatesPopup();
 }
+
+/* ══════════════════════════════
+   RATES POPUP
+══════════════════════════════ */
+function toggleRates(){
+  ratesOpen=!ratesOpen;
+  const popup=document.getElementById('ratesPopup');
+  if(ratesOpen){ buildRatesPopup(); popup.classList.add('open'); }
+  else{ popup.classList.remove('open'); }
+}
+
+function buildRatesPopup(){
+  const w=TIER_WEIGHTS[currentTier];
+  const total=Object.values(w).reduce((a,b)=>a+b,0)||100;
+  document.getElementById('ratesTitle').textContent=TIER_DISPLAY[currentTier]+' Pull Rates';
+  const rows=document.getElementById('ratesRows');
+  rows.innerHTML='';
+  RARITY_ORDER.forEach(r=>{
+    const pct=Math.round((w[r]||0)/total*100);
+    if(pct===0) return; /* hide 0% rarities */
+    const color=RARITY_COLORS[r]||'#666';
+    const row=document.createElement('div');
+    row.className='rates-row';
+    row.innerHTML=`
+      <span class="rates-rarity ${r}">${RARITY_LABEL[r]}</span>
+      <div class="rates-bar-wrap"><div class="rates-bar" style="width:${Math.max(pct,2)}%;background:${color};"></div></div>
+      <span class="rates-pct">${pct}%</span>
+    `;
+    rows.appendChild(row);
+  });
+}
+
+/* close rates popup when clicking elsewhere */
+document.addEventListener('click',e=>{
+  if(ratesOpen && !e.target.closest('.draw-sidebar')){ ratesOpen=false; document.getElementById('ratesPopup').classList.remove('open'); }
+});
 
 /* ══════════════════════════════
    CARD POOL & PICK
 ══════════════════════════════ */
 function mkPool(cards,weights){
   const p=[];
-  cards.forEach(c=>{ const w=weights[c.rarity]||0; for(let i=0;i<w;i++) p.push(c); });
+  cards.forEach(c=>{const w=weights[c.rarity]||0;for(let i=0;i<w;i++)p.push(c);});
   return p;
 }
 function getBaseCards(){
@@ -385,33 +409,25 @@ function getBaseCards(){
 }
 function pick(){
   const pool=mkPool(getBaseCards(),TIER_WEIGHTS[currentTier]);
-  if(!pool.length) return getBaseCards()[0];
+  if(!pool.length)return getBaseCards()[0];
   return pool[Math.floor(Math.random()*pool.length)];
 }
-function starsHTML(n){ let h=''; for(let i=1;i<=5;i++) h+=`<div class="star${i<=n?' lit':''}"></div>`; return h; }
+function starsHTML(n){let h='';for(let i=1;i<=5;i++)h+=`<div class="star${i<=n?' lit':''}"></div>`;return h;}
 
 /* ══════════════════════════════
-   SPIN DRUM  — neighbours visible
-   
-   Key insight: we build a long sequence, place the target
-   near the end, then animate so the target lands EXACTLY
-   centred in the window. Neighbours (±1, ±2) are naturally
-   visible because the fade only covers the outer 35%.
+   SPIN DRUM — BUG FIXED
+   Key: set display:block BEFORE building DOM, then
+   wait two rAF frames so the browser has actually
+   painted and offsetWidth is real.
 ══════════════════════════════ */
-const ITEM_W = () => parseInt(getComputedStyle(document.documentElement).getPropertyValue('--drum-item-w')) || 100;
+const ITEM_W=()=>parseInt(getComputedStyle(document.documentElement).getPropertyValue('--drum-item-w'))||110;
 
 function buildDrumSequence(targetRarity){
-  /* Build a weighted pool from all 9 rarities so the drum
-     shows rarities proportional to the current tier odds */
   const w=TIER_WEIGHTS[currentTier];
   const pool=[];
-  RARITY_DATA.forEach(r=>{ const wt=Math.max(w[r.rarity]||0,1); for(let i=0;i<wt;i++) pool.push(r); });
-
-  /* Random prefix — long enough to spin convincingly */
+  RARITY_DATA.forEach(r=>{const wt=Math.max(w[r.rarity]||0,1);for(let i=0;i<wt;i++)pool.push(r);});
   const seq=[];
-  for(let i=0;i<55;i++) seq.push(pool[Math.floor(Math.random()*pool.length)]);
-
-  /* End exactly on target — repeat 3× so centre lands cleanly */
+  for(let i=0;i<55;i++)seq.push(pool[Math.floor(Math.random()*pool.length)]);
   const target=RARITY_DATA.find(r=>r.rarity===targetRarity);
   seq.push(target,target,target);
   return seq;
@@ -428,34 +444,28 @@ function buildDrumDOM(seq){
   });
 }
 
-function animateDrum(seq, onDone){
+function animateDrum(seq,onDone){
   const drum=document.getElementById('spinDrum');
   const iw=ITEM_W();
   const wrap=document.getElementById('drumWrap');
-  const cw=wrap.offsetWidth;
+  const cw=wrap.offsetWidth; /* safe — called after two rAF frames */
 
-  /* We want item at index (seq.length-2) to be centred */
   const targetIdx=seq.length-2;
   const centreOffset=cw/2-iw/2;
   const finalX=-(targetIdx*iw)+centreOffset;
-
-  /* Start: show a few items from near the beginning */
   const startX=-(4*iw)+centreOffset;
 
   const DUR=7000;
   const t0=performance.now();
-
-  /* Quintic ease-out: starts very fast, nearly stops at end */
-  function ease(t){ return 1-Math.pow(1-t,5); }
+  function ease(t){return 1-Math.pow(1-t,5);}
 
   drum.style.transform=`translateX(${startX}px)`;
 
   (function frame(now){
     const t=Math.min((now-t0)/DUR,1);
-    const x=startX+ease(t)*(finalX-startX);
-    drum.style.transform=`translateX(${x}px)`;
-    if(t<1){ requestAnimationFrame(frame); }
-    else{ drum.style.transform=`translateX(${finalX}px)`; onDone(); }
+    drum.style.transform=`translateX(${startX+ease(t)*(finalX-startX)}px)`;
+    if(t<1){requestAnimationFrame(frame);}
+    else{drum.style.transform=`translateX(${finalX}px)`;onDone();}
   })(performance.now());
 }
 
@@ -463,11 +473,11 @@ function animateDrum(seq, onDone){
    CELEBRATION
 ══════════════════════════════ */
 function buildBlobs(rarity){
-  const el=document.getElementById('auraBlobs'); el.innerHTML='';
-  const colors=BLOB_COLORS[rarity]; if(!colors) return;
-  const count=['supreme','divine'].includes(rarity)?16:['legendary'].includes(rarity)?14:9;
+  const el=document.getElementById('auraBlobs');el.innerHTML='';
+  const colors=BLOB_COLORS[rarity];if(!colors)return;
+  const count=['supreme','divine'].includes(rarity)?16:rarity==='legendary'?14:9;
   for(let i=0;i<count;i++){
-    const b=document.createElement('div'); b.className='blob';
+    const b=document.createElement('div');b.className='blob';
     const size=70+Math.random()*160,angle=Math.random()*360,dist=60+Math.random()*150;
     const x=50+Math.cos(angle*Math.PI/180)*dist/4,y=50+Math.sin(angle*Math.PI/180)*dist/4;
     const dur=1000+Math.random()*1600,delay=Math.random()*800;
@@ -476,21 +486,19 @@ function buildBlobs(rarity){
     el.appendChild(b);
   }
 }
-
 function fireRarityOverlay(rarity){
   const overlay=document.getElementById('rarityOverlay');
-  overlay.className='rarity-overlay'; void overlay.offsetWidth;
-  buildBlobs(rarity); overlay.classList.add(rarity,'fire');
-  setTimeout(()=>{ overlay.className='rarity-overlay'; },2700);
+  overlay.className='rarity-overlay';void overlay.offsetWidth;
+  buildBlobs(rarity);overlay.classList.add(rarity,'fire');
+  setTimeout(()=>{overlay.className='rarity-overlay';},2700);
 }
-
 function fireMotesBurst(rarity){
-  const canvas=document.getElementById('motesCanvas'); canvas.innerHTML='';
-  const colors=MOTE_COLORS[rarity]; if(!colors) return;
-  const count=MOTE_COUNTS[rarity]||0; if(!count) return;
+  const canvas=document.getElementById('motesCanvas');canvas.innerHTML='';
+  const colors=MOTE_COLORS[rarity];if(!colors)return;
+  const count=MOTE_COUNTS[rarity]||0;if(!count)return;
   const big=['divine','supreme','legendary'].includes(rarity);
   for(let i=0;i<count;i++){
-    const m=document.createElement('div'); m.className='mote';
+    const m=document.createElement('div');m.className='mote';
     const size=big?(3+Math.random()*8):(2+Math.random()*5);
     const x=5+Math.random()*90,y=15+Math.random()*75;
     const dyS=-(20+Math.random()*70),dyE=-(100+Math.random()*260),dx=(-55+Math.random()*110);
@@ -500,27 +508,26 @@ function fireMotesBurst(rarity){
     m.style.cssText=`width:${size}px;height:${size}px;left:${x}%;top:${y}%;background:${color};${blur}--dy-start:${dyS}px;--dy-end:${dyE}px;--dx:${dx}px;animation-duration:${dur}ms;animation-delay:${delay}ms;`;
     canvas.appendChild(m);
   }
-  setTimeout(()=>{ canvas.innerHTML=''; },3400);
+  setTimeout(()=>{canvas.innerHTML='';},3400);
 }
 
 let passiveMoteInterval=null;
 function stopPassiveMotes(){
-  if(passiveMoteInterval){ clearInterval(passiveMoteInterval); passiveMoteInterval=null; }
-  const cm=document.getElementById('cardMotes');
-  if(cm) cm.innerHTML='';
+  if(passiveMoteInterval){clearInterval(passiveMoteInterval);passiveMoteInterval=null;}
+  const cm=document.getElementById('cardMotes');if(cm)cm.innerHTML='';
 }
 function startPassiveMotes(rarity){
   stopPassiveMotes();
-  const colors=MOTE_COLORS[rarity]; if(!colors) return;
+  const colors=MOTE_COLORS[rarity];if(!colors)return;
   const container=document.getElementById('cardMotes');
   const rates={super_rare:800,epic:550,legendary:300,divine:180,supreme:110};
   const maxes={super_rare:2,epic:3,legendary:7,divine:11,supreme:16};
-  const rate=rates[rarity]; if(!rate) return;
+  const rate=rates[rarity];if(!rate)return;
   const max=maxes[rarity]||3;
   const big=['divine','supreme','legendary'].includes(rarity);
   passiveMoteInterval=setInterval(()=>{
-    if(container.children.length>=max) return;
-    const m=document.createElement('div'); m.className='cmote';
+    if(container.children.length>=max)return;
+    const m=document.createElement('div');m.className='cmote';
     const size=big?(2+Math.random()*6):(1.5+Math.random()*3.5);
     const x=5+Math.random()*90,y=55+Math.random()*40;
     const dy=-(40+Math.random()*100),dx=(-20+Math.random()*40);
@@ -528,19 +535,18 @@ function startPassiveMotes(rarity){
     const color=colors[Math.floor(Math.random()*colors.length)];
     const blur=big?`box-shadow:0 0 ${size*2}px ${color};`:'';
     m.style.cssText=`width:${size}px;height:${size}px;left:${x}%;top:${y}%;background:${color};${blur}--cm-dy:${dy}px;--cm-dx:${dx}px;animation-duration:${dur}ms;animation-iteration-count:1;`;
-    container.appendChild(m);
-    setTimeout(()=>m.remove(),dur+100);
+    container.appendChild(m);setTimeout(()=>m.remove(),dur+100);
   },rate);
 }
 
 /* ══════════════════════════════
-   ROLL FLOW
+   ROLL FLOW — DRUM BUG FIXED
 ══════════════════════════════ */
 function resetGame(){
   const card=document.getElementById('card');
-  card.classList.remove('reveal'); card.style.display='none'; card.style.opacity='0';
+  card.classList.remove('reveal');card.style.display='none';card.style.opacity='0';
   document.getElementById('emptyState').classList.remove('hidden');
-  document.getElementById('drumWrap').classList.remove('active');
+  document.getElementById('drumWrap').style.display='none';
   document.getElementById('rollCount').textContent='0 draws';
   document.getElementById('btnLabel').textContent='Draw';
   document.getElementById('rollBtn').disabled=false;
@@ -550,32 +556,43 @@ function resetGame(){
 }
 
 function roll(){
-  if(rolling) return; rolling=true;
+  if(rolling)return;
+  rolling=true;
+
   const btn=document.getElementById('rollBtn'),lbl=document.getElementById('btnLabel');
   const card=document.getElementById('card'),empty=document.getElementById('emptyState');
   const drumWrap=document.getElementById('drumWrap');
-  btn.disabled=true; lbl.textContent='Drawing…';
+
+  btn.disabled=true;lbl.textContent='Drawing…';
+
   const result=pick();
   stopPassiveMotes();
-  card.classList.remove('reveal'); card.style.display='none'; card.style.opacity='0';
-  empty.classList.add('hidden');
-  drumWrap.classList.add('active');
 
-  /* build sequence & DOM */
+  /* hide card and empty state */
+  card.classList.remove('reveal');card.style.display='none';card.style.opacity='0';
+  empty.classList.add('hidden');
+
+  /* 1. Build DOM while drum is still hidden */
   const seq=buildDrumSequence(result.rarity);
   buildDrumDOM(seq);
 
-  /* small delay so layout paints before animation */
-  setTimeout(()=>{
-    animateDrum(seq,()=>{
-      setTimeout(()=>{
-        drumWrap.classList.remove('active');
-        fireRarityOverlay(result.rarity);
-        fireMotesBurst(result.rarity);
-        setTimeout(()=>{ showCard(result); },380);
-      },450);
+  /* 2. Make drum visible */
+  drumWrap.style.display='block';
+
+  /* 3. Wait TWO rAF frames so the browser paints and offsetWidth is real */
+  requestAnimationFrame(()=>{
+    requestAnimationFrame(()=>{
+      animateDrum(seq,()=>{
+        /* drum finished — hide it, show card */
+        setTimeout(()=>{
+          drumWrap.style.display='none';
+          fireRarityOverlay(result.rarity);
+          fireMotesBurst(result.rarity);
+          setTimeout(()=>{showCard(result);},380);
+        },450);
+      });
     });
-  },30);
+  });
 }
 
 function showCard(result){
@@ -589,42 +606,37 @@ function showCard(result){
   b.textContent=RARITY_LABEL[result.rarity]||result.rarity;
   b.className='rbadge '+result.rarity;
   card.setAttribute('data-rarity',result.rarity);
-  card.style.display='flex'; card.style.opacity='0';
-  requestAnimationFrame(()=>{ card.classList.add('reveal'); });
-  rc++; document.getElementById('rollCount').textContent=rc+(rc===1?' draw':' draws');
-  addToHistory(result); addToDeck(result);
+  card.style.display='flex';card.style.opacity='0';
+  requestAnimationFrame(()=>{card.classList.add('reveal');});
+  rc++;document.getElementById('rollCount').textContent=rc+(rc===1?' draw':' draws');
+  addToHistory(result);addToDeck(result);
   document.getElementById('rollBtn').disabled=false;
   document.getElementById('btnLabel').textContent='Draw Again';
   rolling=false;
-  setTimeout(()=>{ startPassiveMotes(result.rarity); },700);
+  setTimeout(()=>{startPassiveMotes(result.rarity);},700);
 }
 
 function addToHistory(c){
   const sec=document.getElementById('historySection'),grid=document.getElementById('historyGrid');
-  if(!hShown){ sec.classList.add('visible'); hShown=true; }
-  const chip=document.createElement('div'); chip.className=`hchip ${c.rarity}`;
+  if(!hShown){sec.classList.add('visible');hShown=true;}
+  const chip=document.createElement('div');chip.className=`hchip ${c.rarity}`;
   chip.innerHTML=`<span class="ci">${c.icon}</span><span>${c.name}</span>`;
-  grid.prepend(chip);
-  while(grid.children.length>20) grid.removeChild(grid.lastChild);
+  grid.prepend(chip);while(grid.children.length>20)grid.removeChild(grid.lastChild);
 }
 
 /* ══════════════════════════════
    DECK
 ══════════════════════════════ */
-function addToDeck(c){
-  deckCards.unshift(c);
-  document.getElementById('deckBtn').textContent=`My Deck (${deckCards.length})`;
-}
+function addToDeck(c){deckCards.unshift(c);document.getElementById('deckBtn').textContent=`My Deck (${deckCards.length})`;}
 function renderDeck(){
   const grid=document.getElementById('deckGrid');
   document.getElementById('deckCount').textContent=deckCards.length+(deckCards.length===1?' card':' cards');
-  if(!deckCards.length){ grid.innerHTML='<div class="deck-empty">No cards yet — go draw some.</div>'; return; }
+  if(!deckCards.length){grid.innerHTML='<div class="deck-empty">No cards yet — go draw some.</div>';return;}
   grid.innerHTML='';
   deckCards.forEach((c,i)=>{
-    const div=document.createElement('div'); div.className=`deck-card ${c.rarity}`;
+    const div=document.createElement('div');div.className=`deck-card ${c.rarity}`;
     div.innerHTML=`<div class="dc-header"><span class="dc-icon">${c.icon}</span><span class="dc-badge ${c.rarity}">${RARITY_LABEL[c.rarity]||c.rarity}</span></div><div class="dc-type">${c.type}</div><div class="dc-name">${c.name}</div><div class="dc-desc">${c.desc}</div>`;
-    div.addEventListener('click',()=>openModal(i));
-    grid.appendChild(div);
+    div.addEventListener('click',()=>openModal(i));grid.appendChild(div);
   });
 }
 
@@ -639,44 +651,41 @@ function openModal(i){
   document.getElementById('mDesc').textContent=c.desc;
   document.getElementById('mStars').innerHTML=starsHTML(c.stars);
   const rb=document.getElementById('mRarity');
-  rb.textContent=RARITY_LABEL[c.rarity]||c.rarity; rb.className='rbadge '+c.rarity;
+  rb.textContent=RARITY_LABEL[c.rarity]||c.rarity;rb.className='rbadge '+c.rarity;
   mc.setAttribute('data-rarity',c.rarity);
   document.getElementById('cardModalBg').classList.add('open');
   document.body.style.overflow='hidden';
 }
-function closeModal(e){ if(e.target===document.getElementById('cardModalBg')) closeModalDirect(); }
-function closeModalDirect(){ document.getElementById('cardModalBg').classList.remove('open'); document.body.style.overflow=''; }
-document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeModalDirect(); });
+function closeModal(e){if(e.target===document.getElementById('cardModalBg'))closeModalDirect();}
+function closeModalDirect(){document.getElementById('cardModalBg').classList.remove('open');document.body.style.overflow='';}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModalDirect();});
 
 /* ══════════════════════════════
    CREATE
 ══════════════════════════════ */
 const TYPE_EMOJIS={
-  Ability:  ['⚡','🔥','🌊','🌀','☀️','🧊','🌑','🩸','💀','⚗️','🌪️','💫','🕳️','🌙','⚖️'],
-  Trait:    ['🧠','🦴','👁️','🌒','🕯️','🌿','🐺','⚖️','🦋','🔮','🌱','🦾','🩺','🌫️','💎'],
-  Race:     ['🌑','🌿','🔥','🌊','⚡','👁️','✨','🌌','🐀','💀','🌙','🦋','🌸','🔮','⚰️'],
-  Item:     ['🗡️','📿','📖','🪞','🧲','⌛','🎭','🗺️','🏺','🔑','📜','🪬','🛡️','🔔','🧪'],
-  Familiar: ['🦊','🦅','🐉','🐈‍⬛','🌙','🦋','🐺','🐍','🦉','🐇','🦁','🐻','🦌','🐦‍⬛','🕊️'],
-  Title:    ['👑','🕊️','🔱','⚰️','🎯','🧩','⚔️','🏆','🌟','💀','🔥','⚡','🌊','🛡️','🎪'],
-  Biome:    ['🌋','🌊','🌲','❄️','🌌','🏜️','🌿','🌀','🏔️','🌾','🕳️','🌫️','🪨','🌙','🌑'],
-  Faction:  ['⚜️','🔮','⚔️','🕯️','🌑','🌿','🏛️','💀','🔰','🌙','🗡️','⚖️','🌊','🔥','🎭'],
-  Material: ['💎','🔩','🌿','⚡','✨','🦴','🪨','🔮','🌙','🩸','🌊','🔥','❄️','⚗️','🏺'],
-  Species:  ['👁️','🌿','🦇','🌊','⚰️','🔮','🦋','🐉','🌙','💀','🦾','🌑','⚡','🌸','🦑'],
-  Past:     ['🏛️','🌑','⚔️','💀','✨','🌀','🌌','📜','🔥','🌊','⚖️','🕯️','🗡️','🌿','⚰️'],
-  Event:    ['🌋','🌊','👑','💀','🔮','✨','🌀','⚡','🌑','🏛️','🎭','🔥','❄️','🌙','🕳️'],
+  Ability: ['⚡','🔥','🌊','🌀','☀️','🧊','🌑','🩸','💀','⚗️','🌪️','💫','🕳️','🌙','⚖️'],
+  Trait:   ['🧠','🦴','👁️','🌒','🕯️','🌿','🐺','⚖️','🦋','🔮','🌱','🦾','🩺','🌫️','💎'],
+  Race:    ['🌑','🌿','🔥','🌊','⚡','👁️','✨','🌌','🐀','💀','🌙','🦋','🌸','🔮','⚰️'],
+  Item:    ['🗡️','📿','📖','🪞','🧲','⌛','🎭','🗺️','🏺','🔑','📜','🪬','🛡️','🔔','🧪'],
+  Familiar:['🦊','🦅','🐉','🐈‍⬛','🌙','🦋','🐺','🐍','🦉','🐇','🦁','🐻','🦌','🐦‍⬛','🕊️'],
+  Title:   ['👑','🕊️','🔱','⚰️','🎯','🧩','⚔️','🏆','🌟','💀','🔥','⚡','🌊','🛡️','🎪'],
+  Biome:   ['🌋','🌊','🌲','❄️','🌌','🏜️','🌿','🌀','🏔️','🌾','🕳️','🌫️','🪨','🌙','🌑'],
+  Faction: ['⚜️','🔮','⚔️','🕯️','🌑','🌿','🏛️','💀','🔰','🌙','🗡️','⚖️','🌊','🔥','🎭'],
+  Material:['💎','🔩','🌿','⚡','✨','🦴','🪨','🔮','🌙','🩸','🌊','🔥','❄️','⚗️','🏺'],
+  Species: ['👁️','🌿','🦇','🌊','⚰️','🔮','🦋','🐉','🌙','💀','🦾','🌑','⚡','🌸','🦑'],
+  Past:    ['🏛️','🌑','⚔️','💀','✨','🌀','🌌','📜','🔥','🌊','⚖️','🕯️','🗡️','🌿','⚰️'],
+  Event:   ['🌋','🌊','👑','💀','🔮','✨','🌀','⚡','🌑','🏛️','🎭','🔥','❄️','🌙','🕳️'],
 };
 
 function buildEmojiRow(type){
-  const row=document.getElementById('emojiRow'); row.innerHTML='';
+  const row=document.getElementById('emojiRow');row.innerHTML='';
   const emojis=TYPE_EMOJIS[type]||TYPE_EMOJIS['Ability'];
   selectedEmoji=emojis[0];
   emojis.forEach((em,i)=>{
-    const btn=document.createElement('div'); btn.className='emoji-opt'+(i===0?' chosen':'');
+    const btn=document.createElement('div');btn.className='emoji-opt'+(i===0?' chosen':'');
     btn.textContent=em;
-    btn.onclick=()=>{
-      document.querySelectorAll('.emoji-opt').forEach(b=>b.classList.remove('chosen'));
-      btn.classList.add('chosen'); selectedEmoji=em; updatePreview();
-    };
+    btn.onclick=()=>{document.querySelectorAll('.emoji-opt').forEach(b=>b.classList.remove('chosen'));btn.classList.add('chosen');selectedEmoji=em;updatePreview();};
     row.appendChild(btn);
   });
   updatePreview();
@@ -685,7 +694,7 @@ function buildEmojiRow(type){
 document.addEventListener('DOMContentLoaded',()=>{
   loadUserCards();
   document.getElementById('f-type').addEventListener('change',e=>buildEmojiRow(e.target.value));
-  buildEmojiRow('Ability'); updatePreview();
+  buildEmojiRow('Ability');updatePreview();
 });
 
 function clearCreateForm(){
@@ -698,7 +707,7 @@ function clearCreateForm(){
   document.getElementById('createStatus').className='create-status';
   document.getElementById('createSubmit').disabled=false;
   document.getElementById('submitLabel').textContent='Submit Card';
-  buildEmojiRow('Ability'); updatePreview();
+  buildEmojiRow('Ability');updatePreview();
 }
 
 function updatePreview(){
@@ -712,10 +721,10 @@ function updatePreview(){
   document.getElementById('prev-name').textContent=name;
   document.getElementById('prev-desc').textContent=desc;
   const rb=document.getElementById('prev-rarity');
-  rb.textContent=RARITY_LABEL[rarity]; rb.className='rbadge '+rarity;
+  rb.textContent=RARITY_LABEL[rarity];rb.className='rbadge '+rarity;
   document.getElementById('previewCard').setAttribute('data-rarity',rarity);
-  const ps=document.getElementById('prev-stars'); ps.innerHTML='';
-  for(let i=1;i<=5;i++){ const s=document.createElement('div'); s.className='star'+(i<=stars?' lit':''); ps.appendChild(s); }
+  const ps=document.getElementById('prev-stars');ps.innerHTML='';
+  for(let i=1;i<=5;i++){const s=document.createElement('div');s.className='star'+(i<=stars?' lit':'');ps.appendChild(s);}
 }
 
 async function submitCard(){
@@ -727,19 +736,19 @@ async function submitCard(){
   const stars=RARITY_STARS[rarity]||3;
   const status=document.getElementById('createStatus');
   const submitBtn=document.getElementById('createSubmit');
-  if(!name){ status.textContent='Please give your card a name.'; status.className='create-status err'; return; }
-  if(!desc){ status.textContent='Please write a description.'; status.className='create-status err'; return; }
-  submitBtn.disabled=true; document.getElementById('submitLabel').textContent='Sending…';
-  status.textContent=''; status.className='create-status';
-  const newCard={ type,icon:selectedEmoji,name,rarity,stars,desc,createdBy:creator };
-  userCards.unshift(newCard); saveUserCards();
+  if(!name){status.textContent='Please give your card a name.';status.className='create-status err';return;}
+  if(!desc){status.textContent='Please write a description.';status.className='create-status err';return;}
+  submitBtn.disabled=true;document.getElementById('submitLabel').textContent='Sending…';
+  status.textContent='';status.className='create-status';
+  const newCard={type,icon:selectedEmoji,name,rarity,stars,desc,createdBy:creator};
+  userCards.unshift(newCard);saveUserCards();
   try{
     await fetch(SHEETS_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,type,rarity,stars,icon:selectedEmoji,description:desc,createdBy:creator})});
-    status.textContent='✦ Card created and submitted successfully.'; status.className='create-status ok';
+    status.textContent='✦ Card created and submitted successfully.';status.className='create-status ok';
   }catch(err){
-    status.textContent='Card saved locally. Could not reach the server.'; status.className='create-status err';
+    status.textContent='Card saved locally. Could not reach the server.';status.className='create-status err';
   }
-  submitBtn.disabled=false; document.getElementById('submitLabel').textContent='Submit Another';
+  submitBtn.disabled=false;document.getElementById('submitLabel').textContent='Submit Another';
 }
 </script>
 </body>
