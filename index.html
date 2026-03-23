@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<meta name="theme-color" content="#0a0905"/>
 <title>Fate Engine</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Pro:ital,wght@0,300;0,400;1,300;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -43,132 +44,156 @@
       <div class="mode-card char" onclick="enterMode('character')">
         <span class="mode-icon">⚔️</span>
         <div class="mode-name">Character</div>
-        <div class="mode-desc">Forge yourself from the chaos. Roll abilities, traits, races, items, familiars and titles.</div>
+        <div class="mode-desc">Roll abilities, traits, races, items, familiars and titles.</div>
         <div class="mode-tags">
           <span class="mode-tag">Traits</span><span class="mode-tag">Powers</span>
           <span class="mode-tag">Races</span><span class="mode-tag">Items</span>
-          <span class="mode-tag">Familiars</span><span class="mode-tag">Titles</span>
         </div>
       </div>
       <div class="mode-card world" onclick="enterMode('world')">
         <span class="mode-icon">🌍</span>
         <div class="mode-name">World</div>
-        <div class="mode-desc">Reshape reality itself. Roll biomes, factions, species, past events and more.</div>
+        <div class="mode-desc">Roll biomes, factions, species, past events and more.</div>
         <div class="mode-tags">
           <span class="mode-tag">Biomes</span><span class="mode-tag">Factions</span>
-          <span class="mode-tag">Past</span><span class="mode-tag">Events</span><span class="mode-tag">Species</span>
+          <span class="mode-tag">Events</span>
         </div>
       </div>
       <div class="mode-card total" onclick="enterMode('total')">
         <span class="mode-icon">✦</span>
         <div class="mode-name">Total</div>
-        <div class="mode-desc">Character and world intertwined. Every roll could be anything. Pure chaos.</div>
+        <div class="mode-desc">Everything combined. Pure chaos.</div>
         <div class="mode-tags">
-          <span class="mode-tag">All pools</span><span class="mode-tag">Combined</span>
+          <span class="mode-tag">All pools</span>
         </div>
       </div>
-      <div class="mode-card create" onclick="openCreate()" style="grid-column:1/-1;max-width:320px;margin:0 auto;">
+      <div class="mode-card create" onclick="openCreate()" style="grid-column:1/-1;max-width:280px;margin:0 auto;">
         <span class="mode-icon">✍️</span>
         <div class="mode-name">Create a Card</div>
-        <div class="mode-desc">Design your own card and add it to the engine. No code required.</div>
+        <div class="mode-desc">Design your own. No code required.</div>
       </div>
     </div>
-    <div class="menu-footer">v1.0 · fate-engine</div>
+    <div class="menu-footer">v2.0 · fate-engine</div>
   </div>
 </div>
 
 <!-- ══ GAME ══ -->
-<div class="screen" id="screen-game">
-  <div class="game-inner">
-    <div class="game-topbar">
-      <div class="topbar-left">
-        <button class="back-btn" onclick="goBack()">← Back</button>
-        <button class="nav-btn" id="deckBtn" onclick="openDeck()">My Deck</button>
-        <button class="nav-btn" onclick="openCreate()">✍️ Create</button>
-      </div>
-      <span class="game-badge" id="modeBadge">Character Mode</span>
+<div class="screen" id="screen-game" style="min-height:100vh;height:100vh;max-height:100vh;">
+
+  <!-- sticky top bar -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <button class="back-btn" onclick="goBack()">← Back</button>
+      <button class="nav-btn" id="deckBtn" onclick="openDeck()">My Deck</button>
+      <button class="nav-btn" onclick="openCreate()">✍️ Create</button>
     </div>
-    <div class="game-columns">
-      <div class="pull-tiers">
-        <div class="pull-label">Pull Tier</div>
-        <div class="tier-btn bronze active" id="tier-bronze" onclick="selectTier('bronze')">
-          <span class="tier-icon">🥉</span>
-          <span class="tier-name">Bronze</span>
-          <span class="tier-odds">High trash &amp; common<br>Low rare</span>
-        </div>
-        <div class="tier-btn silver" id="tier-silver" onclick="selectTier('silver')">
-          <span class="tier-icon">🥈</span>
-          <span class="tier-name">Silver</span>
-          <span class="tier-odds">Balanced<br>odds</span>
-        </div>
-        <div class="tier-btn goldtier" id="tier-gold" onclick="selectTier('gold')">
-          <span class="tier-icon">🥇</span>
-          <span class="tier-name">Gold</span>
-          <span class="tier-odds">High epic+<br>Divine possible</span>
-        </div>
+    <span class="game-badge" id="modeBadge">Character Mode</span>
+  </div>
+
+  <!-- three-column body -->
+  <div class="game-body" style="flex:1;overflow:hidden;">
+
+    <!-- LEFT: pull tiers -->
+    <div class="pull-sidebar">
+      <div class="pull-label">Pull Tier</div>
+      <div class="tier-btn bronze active" id="tier-bronze" onclick="selectTier('bronze')">
+        <span class="tier-icon">🥉</span>
+        <span class="tier-name">Bronze</span>
+        <span class="tier-odds">Mostly trash &amp; common<br>Rare: 8%</span>
       </div>
-      <div class="stage-wrap" id="stage">
-        <div class="empty-state" id="emptyState">
-          <div class="empty-orb">✦</div>
-          <span class="empty-text">awaiting your draw</span>
-        </div>
-        <div class="spin-drum-wrap" id="drumWrap">
-          <div class="drum-line-left"></div>
-          <div class="drum-line-right"></div>
-          <div class="spin-drum" id="spinDrum"></div>
-        </div>
-        <div class="card-wrap" id="cardWrap">
-          <div class="card" id="card">
-            <div class="card-top">
-              <div class="card-icon-wrap" id="cIcon"></div>
-              <div class="card-meta">
-                <div class="card-type" id="cType"></div>
-                <span class="rbadge" id="cRarity"></span>
-              </div>
+      <div class="tier-btn silver" id="tier-silver" onclick="selectTier('silver')">
+        <span class="tier-icon">🥈</span>
+        <span class="tier-name">Silver</span>
+        <span class="tier-odds">Common–Rare<br>Epic: 5%</span>
+      </div>
+      <div class="tier-btn goldtier" id="tier-gold" onclick="selectTier('gold')">
+        <span class="tier-icon">🥇</span>
+        <span class="tier-name">Gold</span>
+        <span class="tier-odds">Rare–Epic<br>Legendary: 8%</span>
+      </div>
+      <div class="tier-btn plat" id="tier-plat" onclick="selectTier('plat')">
+        <span class="tier-icon">🔷</span>
+        <span class="tier-name">Platinum</span>
+        <span class="tier-odds">Epic–Legendary<br>Divine: 8%</span>
+      </div>
+      <div class="tier-btn diamond" id="tier-diamond" onclick="selectTier('diamond')">
+        <span class="tier-icon">💎</span>
+        <span class="tier-name">Diamond</span>
+        <span class="tier-odds">Legendary+<br>Supreme: 5%</span>
+      </div>
+    </div>
+
+    <!-- CENTRE: stage -->
+    <div class="stage-col" id="stage">
+
+      <div class="empty-state" id="emptyState">
+        <div class="empty-orb">✦</div>
+        <span class="empty-text">awaiting your draw</span>
+      </div>
+
+      <!-- drum -->
+      <div class="spin-drum-wrap" id="drumWrap">
+        <div class="drum-selector"></div>
+        <div class="spin-drum" id="spinDrum"></div>
+      </div>
+
+      <!-- card -->
+      <div class="card-wrap" id="cardWrap">
+        <div class="card" id="card">
+          <div class="card-top">
+            <div class="card-icon-wrap" id="cIcon"></div>
+            <div class="card-meta">
+              <div class="card-type" id="cType"></div>
+              <span class="rbadge" id="cRarity"></span>
             </div>
-            <div class="card-divider"></div>
-            <div class="card-name" id="cName"></div>
-            <div class="card-desc-wrap"><div class="card-desc" id="cDesc"></div></div>
-            <div class="card-footer"><div class="card-stars" id="cStars"></div></div>
           </div>
-          <div class="card-motes" id="cardMotes"></div>
+          <div class="card-divider"></div>
+          <div class="card-name" id="cName"></div>
+          <div class="card-desc-wrap"><div class="card-desc" id="cDesc"></div></div>
+          <div class="card-footer"><div class="card-stars" id="cStars"></div></div>
         </div>
+        <div class="card-motes" id="cardMotes"></div>
       </div>
-      <div class="roll-column">
-        <button class="roll-btn" id="rollBtn" onclick="roll()"><span id="btnLabel">Draw</span></button>
-        <span class="roll-count" id="rollCount">0 draws</span>
+
+      <div class="history-section" id="historySection">
+        <div class="history-label">Roll history</div>
+        <div class="history-grid" id="historyGrid"></div>
       </div>
+
     </div>
-    <div class="history-section" id="historySection">
-      <div class="history-label">Roll history</div>
-      <div class="history-grid" id="historyGrid"></div>
+
+    <!-- RIGHT: draw button -->
+    <div class="draw-sidebar">
+      <button class="roll-btn" id="rollBtn" onclick="roll()"><span id="btnLabel">Draw</span></button>
+      <span class="roll-count" id="rollCount">0 draws</span>
     </div>
+
   </div>
 </div>
 
 <!-- ══ DECK ══ -->
 <div class="screen" id="screen-deck">
-  <div class="deck-inner">
-    <div class="deck-topbar">
-      <div class="topbar-left">
-        <button class="back-btn" onclick="closeDeck()">← Back</button>
-        <div class="deck-title">My Deck</div>
-      </div>
-      <span class="deck-count" id="deckCount">0 cards</span>
+  <div class="topbar">
+    <div class="topbar-left">
+      <button class="back-btn" onclick="closeDeck()">← Back</button>
+      <span style="font-family:'Cinzel',serif;font-size:.95rem;font-weight:600;letter-spacing:.08em;color:var(--gold);">My Deck</span>
     </div>
+    <span class="deck-count" id="deckCount">0 cards</span>
+  </div>
+  <div class="deck-body">
     <div class="deck-grid" id="deckGrid"><div class="deck-empty">No cards yet — go draw some.</div></div>
   </div>
 </div>
 
 <!-- ══ CREATE ══ -->
 <div class="screen" id="screen-create">
-  <div class="create-inner">
-    <div class="create-topbar">
-      <div class="topbar-left">
-        <button class="back-btn" id="createBackBtn" onclick="closeCreate()">← Back</button>
-        <div class="create-title">Create a Card</div>
-      </div>
+  <div class="topbar">
+    <div class="topbar-left">
+      <button class="back-btn" id="createBackBtn" onclick="closeCreate()">← Back</button>
+      <span style="font-family:'Cinzel',serif;font-size:.95rem;font-weight:600;letter-spacing:.08em;color:#a870e0;">Create a Card</span>
     </div>
+  </div>
+  <div class="create-body">
     <div class="create-layout">
       <div class="create-form">
         <div class="form-group">
@@ -245,39 +270,49 @@
 
 <script src="cards.js"></script>
 <script>
+/* ══════════════════════════════
+   CONFIG
+══════════════════════════════ */
 const SHEETS_URL='https://script.google.com/macros/s/AKfycbyKjG9Ix9FRWhcFi_oQOP69rwgn77-1oS2ZihYtzZdN48vawf5neFgrq4Tc2ht_heW5/exec';
 
-/* ── RARITY ORDER & STARS ── */
-const RARITY_ORDER=['trash','common','uncommon','rare','super_rare','epic','legendary','divine','supreme'];
-const RARITY_STARS={ trash:0, common:1, uncommon:2, rare:3, super_rare:3, epic:4, legendary:5, divine:5, supreme:5 };
-const RARITY_LABEL={ trash:'Trash', common:'Common', uncommon:'Uncommon', rare:'Rare', super_rare:'Super Rare', epic:'Epic', legendary:'Legendary', divine:'Divine', supreme:'Supreme' };
+const RARITY_STARS={ trash:0,common:1,uncommon:2,rare:3,super_rare:3,epic:4,legendary:5,divine:5,supreme:5 };
+const RARITY_LABEL={ trash:'Trash',common:'Common',uncommon:'Uncommon',rare:'Rare',super_rare:'Super Rare',epic:'Epic',legendary:'Legendary',divine:'Divine',supreme:'Supreme' };
 
-/* ── PULL TIER WEIGHTS ── */
-const TIER_WEIGHTS = {
-  bronze: { trash:20, common:35, uncommon:25, rare:12, super_rare:5,  epic:2,  legendary:1,  divine:0,  supreme:0  },
-  silver: { trash:5,  common:25, uncommon:25, rare:20, super_rare:12, epic:8,  legendary:3,  divine:1,  supreme:0  },
-  gold:   { trash:0,  common:0,  uncommon:3,  rare:15, super_rare:22, epic:30, legendary:18, divine:9,  supreme:3  },
+/* ── PULL TIER WEIGHTS (must sum to 100 per tier) ──
+   Designed so each tier feels noticeably better:
+   Bronze:  trash-heavy, almost no epic+
+   Silver:  common/uncommon dominant, rare possible, tiny epic
+   Gold:    rare/super_rare dominant, legendary opens up
+   Plat:    epic/legendary dominant, divine possible
+   Diamond: legendary+ dominant, supreme possible
+*/
+const TIER_WEIGHTS={
+  bronze:  { trash:30, common:35, uncommon:18, rare:8,  super_rare:6,  epic:2,  legendary:1,  divine:0,  supreme:0  },
+  silver:  { trash:8,  common:28, uncommon:28, rare:18, super_rare:10, epic:5,  legendary:2,  divine:1,  supreme:0  },
+  gold:    { trash:0,  common:5,  uncommon:12, rare:28, super_rare:22, epic:18, legendary:8,  divine:5,  supreme:2  },
+  plat:    { trash:0,  common:0,  uncommon:2,  rare:8,  super_rare:18, epic:30, legendary:25, divine:12, supreme:5  },
+  diamond: { trash:0,  common:0,  uncommon:0,  rare:2,  super_rare:8,  epic:20, legendary:35, divine:30, supreme:5  },
 };
 
-/* ── DRUM RARITY DATA ── */
+/* ── DRUM DATA (all 9 rarities shown in wheel) ── */
 const RARITY_DATA=[
-  {rarity:'trash',     icon:'💩', label:'Trash',      weight:20},
-  {rarity:'common',    icon:'◦',  label:'Common',     weight:35},
-  {rarity:'uncommon',  icon:'◈',  label:'Uncommon',   weight:25},
-  {rarity:'rare',      icon:'◆',  label:'Rare',       weight:12},
-  {rarity:'super_rare',icon:'◈◈', label:'Super Rare', weight:5 },
-  {rarity:'epic',      icon:'❋',  label:'Epic',       weight:2 },
-  {rarity:'legendary', icon:'✦',  label:'Legendary',  weight:1 },
-  {rarity:'divine',    icon:'✧',  label:'Divine',     weight:0 },
-  {rarity:'supreme',   icon:'∞',  label:'Supreme',    weight:0 },
+  {rarity:'trash',     icon:'💩', label:'Trash'     },
+  {rarity:'common',    icon:'◦',  label:'Common'    },
+  {rarity:'uncommon',  icon:'◈',  label:'Uncommon'  },
+  {rarity:'rare',      icon:'◆',  label:'Rare'      },
+  {rarity:'super_rare',icon:'◈◈', label:'Super Rare'},
+  {rarity:'epic',      icon:'❋',  label:'Epic'      },
+  {rarity:'legendary', icon:'✦',  label:'Legendary' },
+  {rarity:'divine',    icon:'✧',  label:'Divine'    },
+  {rarity:'supreme',   icon:'∞',  label:'Supreme'   },
 ];
 
-/* ── MOTE / BLOB COLORS ── */
+/* ── CELEBRATION DATA ── */
 const BLOB_COLORS={
   super_rare:['rgba(42,138,138,.5)','rgba(20,100,100,.4)','rgba(80,180,180,.35)'],
   epic:      ['rgba(122,74,184,.55)','rgba(80,20,160,.4)','rgba(160,100,220,.35)'],
   legendary: ['rgba(200,169,110,.6)','rgba(184,112,32,.5)','rgba(232,201,138,.45)'],
-  divine:    ['rgba(200,160,232,.6)','rgba(140,80,200,.45)','rgba(220,180,255,.4)','rgba(160,100,220,.35)'],
+  divine:    ['rgba(200,160,232,.6)','rgba(140,80,200,.45)','rgba(220,180,255,.4)'],
   supreme:   ['rgba(232,208,160,.65)','rgba(200,180,100,.5)','rgba(255,220,80,.4)','rgba(220,190,120,.45)'],
 };
 const MOTE_COLORS={
@@ -287,29 +322,33 @@ const MOTE_COLORS={
   divine:    ['#ddb8ff','#c890e8','#f0d0ff','#b080d0','#e0b8f8'],
   supreme:   ['#f0e0b0','#e8d080','#fff0c0','#d0b860','#ffe890','#ffffff'],
 };
+const MOTE_COUNTS={ super_rare:12,epic:22,legendary:40,divine:55,supreme:75 };
 
 /* ── STATE ── */
-let currentTier='bronze', mode=null, rc=0, rolling=false, hShown=false;
-let deckCards=[], userCards=[];
-let selectedEmoji='⚡', createFromGame=false;
+let currentTier='bronze',mode=null,rc=0,rolling=false,hShown=false;
+let deckCards=[],userCards=[];
+let selectedEmoji='⚡',createFromGame=false;
 
-/* ── LOCALSTORAGE ── */
 function saveUserCards(){ try{ localStorage.setItem('fe_user_cards',JSON.stringify(userCards)); }catch(e){} }
 function loadUserCards(){ try{ const d=localStorage.getItem('fe_user_cards'); if(d) userCards=JSON.parse(d); }catch(e){ userCards=[]; } }
 
-/* ── NAVIGATION ── */
+/* ══════════════════════════════
+   NAVIGATION
+══════════════════════════════ */
 function show(id){
   ['screen-menu','screen-game','screen-deck','screen-create'].forEach(s=>{
     document.getElementById(s).classList.toggle('active',s===id);
   });
   window.scrollTo(0,0);
 }
+
 function enterMode(m){
   mode=m; rc=0; rolling=false; hShown=false;
   document.body.className='mode-'+m+' tier-bronze';
   document.getElementById('modeBadge').textContent={character:'Character Mode',world:'World Mode',total:'Total Mode'}[m];
   resetGame(); show('screen-game'); selectTier('bronze');
 }
+
 function goBack(){ stopPassiveMotes(); show('screen-menu'); document.body.className=''; }
 function openDeck(){ renderDeck(); show('screen-deck'); }
 function closeDeck(){ show('screen-game'); }
@@ -321,37 +360,104 @@ function closeCreate(){ show(createFromGame?'screen-game':'screen-menu'); }
 
 function selectTier(t){
   currentTier=t;
-  ['bronze','silver','gold'].forEach(id=>{ document.getElementById('tier-'+id).classList.toggle('active',id===t); });
+  ['bronze','silver','gold','plat','diamond'].forEach(id=>{
+    document.getElementById('tier-'+id).classList.toggle('active',id===t);
+  });
   const mc=[...document.body.classList].find(c=>c.startsWith('mode-'))||'';
   document.body.className=mc+' tier-'+t;
 }
 
-/* ── POOL & PICK ── */
-function mkPool(cards,weights){ const p=[]; cards.forEach(c=>{ const w=weights[c.rarity]||0; for(let i=0;i<w;i++) p.push(c); }); return p; }
-function getBaseCards(){ const off=mode==='character'?CHARACTER_CARDS:mode==='world'?WORLD_CARDS:[...CHARACTER_CARDS,...WORLD_CARDS]; return [...off,...userCards]; }
-function pick(){ const pool=mkPool(getBaseCards(),TIER_WEIGHTS[currentTier]); if(!pool.length) return getBaseCards()[0]; return pool[Math.floor(Math.random()*pool.length)]; }
+/* ══════════════════════════════
+   CARD POOL & PICK
+══════════════════════════════ */
+function mkPool(cards,weights){
+  const p=[];
+  cards.forEach(c=>{ const w=weights[c.rarity]||0; for(let i=0;i<w;i++) p.push(c); });
+  return p;
+}
+function getBaseCards(){
+  const off=mode==='character'?CHARACTER_CARDS:mode==='world'?WORLD_CARDS:[...CHARACTER_CARDS,...WORLD_CARDS];
+  return [...off,...userCards];
+}
+function pick(){
+  const pool=mkPool(getBaseCards(),TIER_WEIGHTS[currentTier]);
+  if(!pool.length) return getBaseCards()[0];
+  return pool[Math.floor(Math.random()*pool.length)];
+}
 function starsHTML(n){ let h=''; for(let i=1;i<=5;i++) h+=`<div class="star${i<=n?' lit':''}"></div>`; return h; }
 
-/* ── SPIN DRUM ── */
-const ITEM_W=140;
+/* ══════════════════════════════
+   SPIN DRUM  — neighbours visible
+   
+   Key insight: we build a long sequence, place the target
+   near the end, then animate so the target lands EXACTLY
+   centred in the window. Neighbours (±1, ±2) are naturally
+   visible because the fade only covers the outer 35%.
+══════════════════════════════ */
+const ITEM_W = () => parseInt(getComputedStyle(document.documentElement).getPropertyValue('--drum-item-w')) || 100;
+
 function buildDrumSequence(targetRarity){
+  /* Build a weighted pool from all 9 rarities so the drum
+     shows rarities proportional to the current tier odds */
   const w=TIER_WEIGHTS[currentTier];
-  const pool=[]; RARITY_DATA.forEach(r=>{ const wt=w[r.rarity]||0; for(let i=0;i<wt;i++) pool.push(r); });
-  if(!pool.length) RARITY_DATA.forEach(r=>{ for(let i=0;i<r.weight;i++) pool.push(r); });
-  const seq=[]; for(let i=0;i<60;i++) seq.push(pool[Math.floor(Math.random()*pool.length)]);
-  const target=RARITY_DATA.find(r=>r.rarity===targetRarity); seq.push(target,target,target); return seq;
-}
-function buildDrumDOM(seq){ const drum=document.getElementById('spinDrum'); drum.innerHTML=''; seq.forEach(r=>{ const d=document.createElement('div'); d.className=`drum-item ${r.rarity}`; d.innerHTML=`<span class="d-icon">${r.icon}</span><span class="d-label">${r.label}</span>`; drum.appendChild(d); }); }
-function animateDrum(seq,cw,onDone){
-  const drum=document.getElementById('spinDrum');
-  const ti=seq.length-2,cx=cw/2-ITEM_W/2,fx=-(ti*ITEM_W)+cx,sx=-(5*ITEM_W)+cx;
-  const DUR=7000,t0=performance.now();
-  function ease(t){ return 1-Math.pow(1-t,5); }
-  drum.style.transform=`translateX(${sx}px)`;
-  (function frame(now){ const t=Math.min((now-t0)/DUR,1); drum.style.transform=`translateX(${sx+ease(t)*(fx-sx)}px)`; t<1?requestAnimationFrame(frame):(drum.style.transform=`translateX(${fx}px)`,onDone()); })(performance.now());
+  const pool=[];
+  RARITY_DATA.forEach(r=>{ const wt=Math.max(w[r.rarity]||0,1); for(let i=0;i<wt;i++) pool.push(r); });
+
+  /* Random prefix — long enough to spin convincingly */
+  const seq=[];
+  for(let i=0;i<55;i++) seq.push(pool[Math.floor(Math.random()*pool.length)]);
+
+  /* End exactly on target — repeat 3× so centre lands cleanly */
+  const target=RARITY_DATA.find(r=>r.rarity===targetRarity);
+  seq.push(target,target,target);
+  return seq;
 }
 
-/* ── CELEBRATION ── */
+function buildDrumDOM(seq){
+  const drum=document.getElementById('spinDrum');
+  drum.innerHTML='';
+  seq.forEach(r=>{
+    const d=document.createElement('div');
+    d.className=`drum-item ${r.rarity}`;
+    d.innerHTML=`<span class="d-icon">${r.icon}</span><span class="d-label">${r.label}</span>`;
+    drum.appendChild(d);
+  });
+}
+
+function animateDrum(seq, onDone){
+  const drum=document.getElementById('spinDrum');
+  const iw=ITEM_W();
+  const wrap=document.getElementById('drumWrap');
+  const cw=wrap.offsetWidth;
+
+  /* We want item at index (seq.length-2) to be centred */
+  const targetIdx=seq.length-2;
+  const centreOffset=cw/2-iw/2;
+  const finalX=-(targetIdx*iw)+centreOffset;
+
+  /* Start: show a few items from near the beginning */
+  const startX=-(4*iw)+centreOffset;
+
+  const DUR=7000;
+  const t0=performance.now();
+
+  /* Quintic ease-out: starts very fast, nearly stops at end */
+  function ease(t){ return 1-Math.pow(1-t,5); }
+
+  drum.style.transform=`translateX(${startX}px)`;
+
+  (function frame(now){
+    const t=Math.min((now-t0)/DUR,1);
+    const x=startX+ease(t)*(finalX-startX);
+    drum.style.transform=`translateX(${x}px)`;
+    if(t<1){ requestAnimationFrame(frame); }
+    else{ drum.style.transform=`translateX(${finalX}px)`; onDone(); }
+  })(performance.now());
+}
+
+/* ══════════════════════════════
+   CELEBRATION
+══════════════════════════════ */
 function buildBlobs(rarity){
   const el=document.getElementById('auraBlobs'); el.innerHTML='';
   const colors=BLOB_COLORS[rarity]; if(!colors) return;
@@ -366,40 +472,46 @@ function buildBlobs(rarity){
     el.appendChild(b);
   }
 }
+
 function fireRarityOverlay(rarity){
   const overlay=document.getElementById('rarityOverlay');
   overlay.className='rarity-overlay'; void overlay.offsetWidth;
   buildBlobs(rarity); overlay.classList.add(rarity,'fire');
   setTimeout(()=>{ overlay.className='rarity-overlay'; },2700);
 }
+
 function fireMotesBurst(rarity){
   const canvas=document.getElementById('motesCanvas'); canvas.innerHTML='';
   const colors=MOTE_COLORS[rarity]; if(!colors) return;
-  const count={super_rare:12,epic:22,legendary:40,divine:55,supreme:70}[rarity]||0; if(!count) return;
+  const count=MOTE_COUNTS[rarity]||0; if(!count) return;
+  const big=['divine','supreme','legendary'].includes(rarity);
   for(let i=0;i<count;i++){
     const m=document.createElement('div'); m.className='mote';
-    const big=['divine','supreme','legendary'].includes(rarity);
     const size=big?(3+Math.random()*8):(2+Math.random()*5);
     const x=5+Math.random()*90,y=15+Math.random()*75;
-    const dyS=-(20+Math.random()*70),dyE=-(100+Math.random()*250),dx=(-50+Math.random()*100);
-    const dur=900+Math.random()*1500,delay=Math.random()*1500;
+    const dyS=-(20+Math.random()*70),dyE=-(100+Math.random()*260),dx=(-55+Math.random()*110);
+    const dur=900+Math.random()*1500,delay=Math.random()*1600;
     const color=colors[Math.floor(Math.random()*colors.length)];
     const blur=big?`box-shadow:0 0 ${size*2}px ${color};`:'';
     m.style.cssText=`width:${size}px;height:${size}px;left:${x}%;top:${y}%;background:${color};${blur}--dy-start:${dyS}px;--dy-end:${dyE}px;--dx:${dx}px;animation-duration:${dur}ms;animation-delay:${delay}ms;`;
     canvas.appendChild(m);
   }
-  setTimeout(()=>{ canvas.innerHTML=''; },3200);
+  setTimeout(()=>{ canvas.innerHTML=''; },3400);
 }
 
 let passiveMoteInterval=null;
-function stopPassiveMotes(){ if(passiveMoteInterval){ clearInterval(passiveMoteInterval); passiveMoteInterval=null; } document.getElementById('cardMotes').innerHTML=''; }
+function stopPassiveMotes(){
+  if(passiveMoteInterval){ clearInterval(passiveMoteInterval); passiveMoteInterval=null; }
+  const cm=document.getElementById('cardMotes');
+  if(cm) cm.innerHTML='';
+}
 function startPassiveMotes(rarity){
   stopPassiveMotes();
   const colors=MOTE_COLORS[rarity]; if(!colors) return;
   const container=document.getElementById('cardMotes');
-  const rates={super_rare:800,epic:550,legendary:300,divine:200,supreme:130};
-  const maxes={super_rare:2,epic:3,legendary:7,divine:10,supreme:15};
-  const rate=rates[rarity]||0; if(!rate) return;
+  const rates={super_rare:800,epic:550,legendary:300,divine:180,supreme:110};
+  const maxes={super_rare:2,epic:3,legendary:7,divine:11,supreme:16};
+  const rate=rates[rarity]; if(!rate) return;
   const max=maxes[rarity]||3;
   const big=['divine','supreme','legendary'].includes(rarity);
   passiveMoteInterval=setInterval(()=>{
@@ -407,16 +519,19 @@ function startPassiveMotes(rarity){
     const m=document.createElement('div'); m.className='cmote';
     const size=big?(2+Math.random()*6):(1.5+Math.random()*3.5);
     const x=5+Math.random()*90,y=55+Math.random()*40;
-    const dy=-(45+Math.random()*100),dx=(-20+Math.random()*40);
-    const dur=1300+Math.random()*1800;
+    const dy=-(40+Math.random()*100),dx=(-20+Math.random()*40);
+    const dur=1300+Math.random()*1900;
     const color=colors[Math.floor(Math.random()*colors.length)];
     const blur=big?`box-shadow:0 0 ${size*2}px ${color};`:'';
     m.style.cssText=`width:${size}px;height:${size}px;left:${x}%;top:${y}%;background:${color};${blur}--cm-dy:${dy}px;--cm-dx:${dx}px;animation-duration:${dur}ms;animation-iteration-count:1;`;
-    container.appendChild(m); setTimeout(()=>m.remove(),dur+100);
+    container.appendChild(m);
+    setTimeout(()=>m.remove(),dur+100);
   },rate);
 }
 
-/* ── ROLL ── */
+/* ══════════════════════════════
+   ROLL FLOW
+══════════════════════════════ */
 function resetGame(){
   const card=document.getElementById('card');
   card.classList.remove('reveal'); card.style.display='none'; card.style.opacity='0';
@@ -429,6 +544,7 @@ function resetGame(){
   document.getElementById('historyGrid').innerHTML='';
   stopPassiveMotes();
 }
+
 function roll(){
   if(rolling) return; rolling=true;
   const btn=document.getElementById('rollBtn'),lbl=document.getElementById('btnLabel');
@@ -438,17 +554,26 @@ function roll(){
   const result=pick();
   stopPassiveMotes();
   card.classList.remove('reveal'); card.style.display='none'; card.style.opacity='0';
-  empty.classList.add('hidden'); drumWrap.classList.add('active');
-  const cw=drumWrap.offsetWidth;
-  buildDrumDOM(buildDrumSequence(result.rarity));
-  animateDrum(buildDrumSequence(result.rarity),cw,()=>{
-    setTimeout(()=>{
-      drumWrap.classList.remove('active');
-      fireRarityOverlay(result.rarity); fireMotesBurst(result.rarity);
-      setTimeout(()=>{ showCard(result); },380);
-    },400);
-  });
+  empty.classList.add('hidden');
+  drumWrap.classList.add('active');
+
+  /* build sequence & DOM */
+  const seq=buildDrumSequence(result.rarity);
+  buildDrumDOM(seq);
+
+  /* small delay so layout paints before animation */
+  setTimeout(()=>{
+    animateDrum(seq,()=>{
+      setTimeout(()=>{
+        drumWrap.classList.remove('active');
+        fireRarityOverlay(result.rarity);
+        fireMotesBurst(result.rarity);
+        setTimeout(()=>{ showCard(result); },380);
+      },450);
+    });
+  },30);
 }
+
 function showCard(result){
   const card=document.getElementById('card');
   document.getElementById('cIcon').textContent=result.icon;
@@ -470,17 +595,22 @@ function showCard(result){
   setTimeout(()=>{ startPassiveMotes(result.rarity); },700);
 }
 
-/* ── HISTORY ── */
 function addToHistory(c){
   const sec=document.getElementById('historySection'),grid=document.getElementById('historyGrid');
   if(!hShown){ sec.classList.add('visible'); hShown=true; }
   const chip=document.createElement('div'); chip.className=`hchip ${c.rarity}`;
   chip.innerHTML=`<span class="ci">${c.icon}</span><span>${c.name}</span>`;
-  grid.prepend(chip); while(grid.children.length>24) grid.removeChild(grid.lastChild);
+  grid.prepend(chip);
+  while(grid.children.length>20) grid.removeChild(grid.lastChild);
 }
 
-/* ── DECK ── */
-function addToDeck(c){ deckCards.unshift(c); document.getElementById('deckBtn').textContent=`My Deck (${deckCards.length})`; }
+/* ══════════════════════════════
+   DECK
+══════════════════════════════ */
+function addToDeck(c){
+  deckCards.unshift(c);
+  document.getElementById('deckBtn').textContent=`My Deck (${deckCards.length})`;
+}
 function renderDeck(){
   const grid=document.getElementById('deckGrid');
   document.getElementById('deckCount').textContent=deckCards.length+(deckCards.length===1?' card':' cards');
@@ -489,11 +619,14 @@ function renderDeck(){
   deckCards.forEach((c,i)=>{
     const div=document.createElement('div'); div.className=`deck-card ${c.rarity}`;
     div.innerHTML=`<div class="dc-header"><span class="dc-icon">${c.icon}</span><span class="dc-badge ${c.rarity}">${RARITY_LABEL[c.rarity]||c.rarity}</span></div><div class="dc-type">${c.type}</div><div class="dc-name">${c.name}</div><div class="dc-desc">${c.desc}</div>`;
-    div.addEventListener('click',()=>openModal(i)); grid.appendChild(div);
+    div.addEventListener('click',()=>openModal(i));
+    grid.appendChild(div);
   });
 }
 
-/* ── MODAL ── */
+/* ══════════════════════════════
+   MODAL
+══════════════════════════════ */
 function openModal(i){
   const c=deckCards[i],mc=document.getElementById('modalCard');
   document.getElementById('mIcon').textContent=c.icon;
@@ -511,7 +644,9 @@ function closeModal(e){ if(e.target===document.getElementById('cardModalBg')) cl
 function closeModalDirect(){ document.getElementById('cardModalBg').classList.remove('open'); document.body.style.overflow=''; }
 document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeModalDirect(); });
 
-/* ── CREATE ── */
+/* ══════════════════════════════
+   CREATE
+══════════════════════════════ */
 const TYPE_EMOJIS={
   Ability:  ['⚡','🔥','🌊','🌀','☀️','🧊','🌑','🩸','💀','⚗️','🌪️','💫','🕳️','🌙','⚖️'],
   Trait:    ['🧠','🦴','👁️','🌒','🕯️','🌿','🐺','⚖️','🦋','🔮','🌱','🦾','🩺','🌫️','💎'],
@@ -534,7 +669,10 @@ function buildEmojiRow(type){
   emojis.forEach((em,i)=>{
     const btn=document.createElement('div'); btn.className='emoji-opt'+(i===0?' chosen':'');
     btn.textContent=em;
-    btn.onclick=()=>{ document.querySelectorAll('.emoji-opt').forEach(b=>b.classList.remove('chosen')); btn.classList.add('chosen'); selectedEmoji=em; updatePreview(); };
+    btn.onclick=()=>{
+      document.querySelectorAll('.emoji-opt').forEach(b=>b.classList.remove('chosen'));
+      btn.classList.add('chosen'); selectedEmoji=em; updatePreview();
+    };
     row.appendChild(btn);
   });
   updatePreview();
@@ -542,7 +680,7 @@ function buildEmojiRow(type){
 
 document.addEventListener('DOMContentLoaded',()=>{
   loadUserCards();
-  document.getElementById('f-type').addEventListener('change',e=>{ buildEmojiRow(e.target.value); });
+  document.getElementById('f-type').addEventListener('change',e=>buildEmojiRow(e.target.value));
   buildEmojiRow('Ability'); updatePreview();
 });
 
@@ -589,10 +727,10 @@ async function submitCard(){
   if(!desc){ status.textContent='Please write a description.'; status.className='create-status err'; return; }
   submitBtn.disabled=true; document.getElementById('submitLabel').textContent='Sending…';
   status.textContent=''; status.className='create-status';
-  const newCard={ type, icon:selectedEmoji, name, rarity, stars, desc, createdBy:creator };
+  const newCard={ type,icon:selectedEmoji,name,rarity,stars,desc,createdBy:creator };
   userCards.unshift(newCard); saveUserCards();
   try{
-    await fetch(SHEETS_URL,{ method:'POST', mode:'no-cors', headers:{'Content-Type':'application/json'}, body:JSON.stringify({name,type,rarity,stars,icon:selectedEmoji,description:desc,createdBy:creator}) });
+    await fetch(SHEETS_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,type,rarity,stars,icon:selectedEmoji,description:desc,createdBy:creator})});
     status.textContent='✦ Card created and submitted successfully.'; status.className='create-status ok';
   }catch(err){
     status.textContent='Card saved locally. Could not reach the server.'; status.className='create-status err';
