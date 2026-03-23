@@ -166,6 +166,7 @@
     <div class="draw-sidebar">
       <button class="roll-btn" id="rollBtn" onclick="roll()"><span id="btnLabel">Draw</span></button>
       <span class="roll-count" id="rollCount">0 draws</span>
+      <span class="tier-active-label" id="tierActiveLabel">Bronze Pull</span>
     </div>
 
   </div>
@@ -358,6 +359,7 @@ function openCreate(){
 }
 function closeCreate(){ show(createFromGame?'screen-game':'screen-menu'); }
 
+const TIER_NAMES={bronze:'Bronze Pull',silver:'Silver Pull',gold:'Gold Pull',plat:'Platinum Pull',diamond:'Diamond Pull'};
 function selectTier(t){
   currentTier=t;
   ['bronze','silver','gold','plat','diamond'].forEach(id=>{
@@ -365,6 +367,8 @@ function selectTier(t){
   });
   const mc=[...document.body.classList].find(c=>c.startsWith('mode-'))||'';
   document.body.className=mc+' tier-'+t;
+  const lbl=document.getElementById('tierActiveLabel');
+  if(lbl) lbl.textContent=TIER_NAMES[t]||t;
 }
 
 /* ══════════════════════════════
